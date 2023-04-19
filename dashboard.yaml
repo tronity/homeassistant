@@ -1,0 +1,40 @@
+#TODO Namesgebung der Entities anpassen udn in README übernehmen
+#TODO auf PC clonen
+
+type: vertical-stack
+cards:
+  - type: entities
+    entities:
+      - entity:
+        name: Odometer
+      - entity: sensor.tronity_die_ente_plugged
+        name: Plugged
+        icon: mdi:power-plug
+      - entity:
+        name: Charging
+        icon: mdi:battery-charging
+      - entity:
+        name: Charging Remaining Time
+      - entity:
+        name: Charger Power
+
+
+type: vertical-stack
+cards:
+  - type: horizontal-stack
+    cards:
+      - type: entity
+        entity:
+        name: Remaining Range
+        state_color: false
+      - type: gauge
+        entity:
+        severity:
+          green: 50
+          yellow: 25
+          red: 0
+        name: Battery Level
+  - type: history-graph
+    entities:
+      - entity:
+    title: Battery Level

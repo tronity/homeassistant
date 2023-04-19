@@ -1,0 +1,9 @@
+{
+  "domain": "tronity",
+  "name": "Tronity",
+  "codeowners": ["@hanno-tronity"],
+  "config_flow": true,
+  "dependencies": [],
+  "iot_class": "local_polling",
+  "requirements": []
+}
