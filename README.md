@@ -1,4 +1,4 @@
-### Tronity Integration for Home Assistant
+# Tronity Integration for Home Assistant
 
 The Tronity Integration is a custom integration developed for Home Assistant, designed to enable you to monitor and 
 utilize the data provided by Tronity. By integrating Tronity with Home Assistant, you can easily monitor your vehicle's 
@@ -27,6 +27,18 @@ data and create automations based on it.
 3. Search for Tronity and select it.
 4. Follow the prompts to complete the integration setup.
 5. Once the integration is set up, you can add Tronity sensors to your Home Assistant dashboard to monitor your vehicle's data.
+
+### Setting up multiple vehicles
+To monitor data for multiple vehicles, you can set up multiple instances of Tronity in Home Assistant. Follow the same steps as above for each vehicle you want to monitor. Once you have set up the integrations for all your vehicles, you can add the corresponding Tronity sensors to your dashboard to view the data for each vehicle.
+
+### How to implement the Home Assistant dashboard YAML file
+1. Click on "Settings" in the left sidebar, then click on "Dashboard" to create a new dashboard.
+2. Click on the "Dashboard" button, then click on the "+ Add Dashboard" button to add a dashboard.
+3. Press the three dots on the top right, select "Edit Dashboard," and choose an empty dashboard. 
+4. Click the "+ Add Card" button and select "Manual Card" from the list of card types and paste the example YAML file into the card's configuration text box.
+5. Customize the configuration for your specific sensors by following the comments in the YAML file.
+6. Optionally, replace the friendly names and icons in the YAML file with your own preferences.
+7. Click "Save" to save the changes to the dashboard.
 
 ## Contributing
 
