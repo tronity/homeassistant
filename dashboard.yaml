@@ -1,40 +1,63 @@
-#TODO Namesgebung der Entities anpassen udn in README übernehmen
-#TODO auf PC clonen
-
 type: vertical-stack
 cards:
+  - type: entity
+    entity:
+      # Enter the entity ID of your display name sensor here (must start with 'sensor.tronity_')
+      # Example: sensor.tronity_opel_corsa_display_name
+      entity: sensor.tronity_<your_display_name_sensor_id>
+      # Enter the friendly name you want to display for this sensor
+      # Example: Display Name
+      name: <friendly_name>
+      # Enter the icon you want to display for this sensor
+      # Example: mdi:car
+      icon: <icon>
+
   - type: entities
     entities:
-      - entity:
-        name: Odometer
-      - entity: sensor.tronity_die_ente_plugged
-        name: Plugged
-        icon: mdi:power-plug
-      - entity:
-        name: Charging
-        icon: mdi:battery-charging
-      - entity:
-        name: Charging Remaining Time
-      - entity:
-        name: Charger Power
+      # Enter the entity ID of your odometer sensor here (must start with 'sensor.tronity_')
+      # Example: sensor.tronity_opel_corsa_odometer
+      - entity: sensor.tronity_<your_odometer_sensor_id>
+        # Enter the friendly name you want to display for this sensor
+        # Example: Odometer
+        name: <friendly_name>
+      # Enter the entity ID of your plugged sensor here (must start with 'sensor.tronity_')
+      # Example: sensor.tronity_opel_corsa_plugged
+      - entity: sensor.tronity_<your_plugged_sensor_id>
+        # Enter the friendly name you want to display for this sensor
+        # Example: Plugged
+        name: <friendly_name>
+        # Enter the icon you want to display for this sensor
+        # Example: mdi:power-plug
+        icon: <icon>
+      # Add more entities here
 
-
-type: vertical-stack
-cards:
   - type: horizontal-stack
     cards:
+      # Enter the entity ID of your remaining range sensor here (must start with 'sensor.tronity_')
+      # Example: sensor.tronity_opel_corsa_range
       - type: entity
-        entity:
-        name: Remaining Range
+        entity: sensor.tronity_<your_remaining_range_sensor_id>
+        # Enter the friendly name you want to display for this sensor
+        # Example: Remaining Range
+        name: <friendly_name>
         state_color: false
+      # Enter the entity ID of your battery level sensor here (must start with 'sensor.tronity_')
+      # Example: sensor.tronity_opel_corsa_level
       - type: gauge
-        entity:
+        entity: sensor.tronity_<your_battery_level_sensor_id>
+        # Enter the friendly name you want to display for this sensor
+        # Example: Battery Level
+        name: <friendly_name>
         severity:
           green: 50
           yellow: 25
           red: 0
-        name: Battery Level
+
   - type: history-graph
     entities:
-      - entity:
-    title: Battery Level
+      # Enter the entity ID of your battery history graph sensor here (must start with 'sensor.tronity_')
+      # Example: sensor.tronity_opel_corsa_level
+      - entity: sensor.tronity_<your_battery_history_graph_sensor_id>
+    # Enter the title you want to display for this graph
+    # Example: Battery Level
+    title: <friendly_name>
