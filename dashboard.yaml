@@ -1,16 +1,15 @@
 type: vertical-stack
 cards:
   - type: entity
-    entity:
-      # Enter the entity ID of your display name sensor here (must start with 'sensor.tronity_')
-      # Example: sensor.tronity_opel_corsa_display_name
-      entity: sensor.tronity_<your_display_name_sensor_id>
-      # Enter the friendly name you want to display for this sensor
-      # Example: Display Name
-      name: <friendly_name>
-      # Enter the icon you want to display for this sensor
-      # Example: mdi:car
-      icon: <icon>
+    # Enter the entity ID of your display name sensor here (must start with 'sensor.tronity_')
+    # Example: sensor.tronity_opel_corsa_display_name
+    entity: sensor.tronity_<your_display_name_sensor_id>
+    # Enter the friendly name you want to display for this sensor
+    # Example: Display Name
+    name: <friendly_name>
+    # Enter the icon you want to display for this sensor
+    # Example: mdi:car
+    icon: <icon>
 
   - type: entities
     entities:
@@ -29,7 +28,27 @@ cards:
         # Enter the icon you want to display for this sensor
         # Example: mdi:power-plug
         icon: <icon>
-      # Add more entities here
+      # Enter the entity ID of your charging sensor here (must start with 'sensor.tronity_')
+      # Example: sensor.tronity_die_ente_charging
+      - entity: sensor.tronity_<your_charging_sensor_id>
+        # Enter the friendly name you want to display for this sensor
+        # Example: Charging
+        name: <friendly_name>
+        # Enter the icon you want to display for this sensor
+        # Example: mdi:battery-charging
+        icon: <icon>
+      # Enter the entity ID of your charge remaining time sensor here (must start with 'sensor.tronity_')
+      # Example: sensor.tronity_die_ente_charge_remaining_time
+      - entity: sensor.tronity_<your_charge_remaining_time_sensor_id>
+        # Enter the friendly name you want to display for this sensor
+        # Example: Charging Remaining Time
+        name: <friendly_name>
+      # Enter the entity ID of your charger power sensor here (must start with 'sensor.tronity_')
+      # Example: sensor.tronity_die_ente_charger_power
+      - entity: sensor.tronity_<your_charger_power_sensor_id>
+        # Enter the friendly name you want to display for this sensor
+        # Example: Charger Power
+        name: <friendly_name>
 
   - type: horizontal-stack
     cards:

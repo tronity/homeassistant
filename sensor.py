@@ -140,9 +140,7 @@ class Range(SensorEntity):
             client_secret=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_SECRET],
             vehicle_id=hass.data[DOMAIN][my_api.entry_id][CONF_VEHICLE_ID],
         )
-        self._attr_name = (
-            f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.range"
-        )
+        self._attr_name = f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.remainig_range"
         self._attr_device_class = SensorDeviceClass.DISTANCE
         self._attr_native_unit_of_measurement = "km"
         self._attr_native_value = 0
@@ -160,9 +158,7 @@ class Level(SensorEntity):
             client_secret=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_SECRET],
             vehicle_id=hass.data[DOMAIN][my_api.entry_id][CONF_VEHICLE_ID],
         )
-        self._attr_name = (
-            f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.level"
-        )
+        self._attr_name = f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.battery_level"
         self._attr_device_class = SensorDeviceClass.BATTERY
         self._attr_native_unit_of_measurement = "%"
         self._attr_native_value = 0
