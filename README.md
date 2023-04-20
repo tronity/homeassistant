@@ -32,13 +32,14 @@ data and create automations based on it.
 To monitor data for multiple vehicles, you can set up multiple instances of Tronity in Home Assistant. Follow the same steps as above for each vehicle you want to monitor. Once you have set up the integrations for all your vehicles, you can add the corresponding Tronity sensors to your dashboard to view the data for each vehicle.
 
 ### How to implement the Tronity example_dashboard YAML file
-1. Click on "Settings" in the left sidebar, then click on "Dashboard" to create a new dashboard.
-2. Click on the "Dashboard" button, then click on the "+ Add Dashboard" button to add a dashboard.
-3. Press the three dots on the top right, select "Edit Dashboard," and choose an empty dashboard. 
-4. Click the "+ Add Card" button and select "Manual Card" from the list of card types and paste the example YAML file into the card's configuration text box.
+1. Navigate to the Setting section and click on Dashboards.
+2. Click on the Add Dashboard.
+4. Select your newly created Dashboard.
+3. Press the three dots on the top right, click on Edit Dashboard and select "Start with an empty dashboard". 
+4. Click the Add Card button and select "Manual Card" from the list of card types and paste the example_dashboard YAML file into the card's configuration text box.
 5. Customize the configuration for your specific sensors by following the comments in the YAML file.
 6. Optionally, replace the friendly names and icons in the YAML file with your own preferences.
-7. Click "Save" to save the changes to the dashboard.
+7. Click Save to save the changes to the dashboard.
 
 ## Contributing
 
