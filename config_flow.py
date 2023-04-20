@@ -33,6 +33,21 @@ DATA_SCHEMA = vol.Schema(
 )
 
 
+async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
+    """Validate the user input."""
+
+    hub = TronityHub(
+        hass, data[CONF_CLIENT_ID], data[CONF_CLIENT_SECRET], data[CONF_VEHICLE_ID]
+    )
+
+    if not await hub.authenticate():
+        raise InvalidAuth
+
+    title = await hub.get_display_name()
+
+    return {"title": title}
+
+
 class TronityHub:
     """Initialize the TronityHub class for API authentication."""
 
@@ -91,21 +106,6 @@ class TronityHub:
 
         if status_code == 201 or status_code == 200:
             return True
-
-
-async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
-    """Validate the user input."""
-
-    hub = TronityHub(
-        hass, data[CONF_CLIENT_ID], data[CONF_CLIENT_SECRET], data[CONF_VEHICLE_ID]
-    )
-
-    if not await hub.authenticate():
-        raise InvalidAuth
-
-    title = await hub.get_display_name()
-
-    return {"title": title}
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):

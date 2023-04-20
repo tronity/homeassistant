@@ -67,6 +67,7 @@ async def async_setup_entry(
             ChargerPower(hass, config_entry),
             ChargeRemainingTime(hass, config_entry),
             DisplayName(hass, config_entry),
+            Timestamp(hass, config_entry),
         ],
         True,
     )
@@ -106,7 +107,7 @@ class TronityCoordinator(DataUpdateCoordinator):
             raise UpdateFailed("Timeout while communicating with API") from exc
         except aiohttp.ClientError as err:
             raise _LOGGER(
-                f"Error communicating with API: {err}. Retrying in a few seconds "
+                f"Error communicating with API: {err}. Retrying in a few seconds"
             ) from err
 
 
@@ -249,3 +250,22 @@ class DisplayName(SensorEntity):
         self._attr_name = f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.display_name"
         self._attr_device_class = None
         self._attr_native_value = hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]
+
+
+class Timestamp(SensorEntity):
+    def __init__(self, hass: HomeAssistant, my_api: ConfigEntry) -> None:
+        self.coordinator = TronityCoordinator(
+            hass,
+            client_id=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_ID],
+            client_secret=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_SECRET],
+            vehicle_id=hass.data[DOMAIN][my_api.entry_id][CONF_VEHICLE_ID],
+        )
+        self._attr_name = (
+            f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.timestamp"
+        )
+        self._attr_device_class = None
+        self._attr_native_value = 0
+
+    async def async_update(self) -> None:
+        data = await self.coordinator._async_update_data()
+        self._attr_native_value = data["timestamp"]
