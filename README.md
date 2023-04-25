@@ -25,7 +25,7 @@ data and create automations based on it.
 1. Navigate to the Setting section and click on Devices & Services.
 2. Click on the Add Integration button.
 3. Search for Tronity and select it.
-4. Follow the prompts to complete the integration setup.
+4. In order to complete the integration setup, you will need to provide your Tronity client ID, Client Secret, and Vehicle ID. You can find this information on the Tronity Platform website: https://app.tronity.tech/.
 5. Once the integration is set up, you can add Tronity sensors to your Home Assistant dashboard to monitor your vehicle's data.
 
 ### Setting up multiple vehicles
