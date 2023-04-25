@@ -111,8 +111,6 @@ class TronityCoordinator(DataUpdateCoordinator):
 
 
 class Odometer(SensorEntity):
-    SCAN_INTERVAL = timedelta(minutes=1)
-
     def __init__(self, hass: HomeAssistant, my_api: ConfigEntry) -> None:
         self.coordinator = TronityCoordinator(
             hass,
@@ -249,4 +247,3 @@ class DisplayName(SensorEntity):
         self._attr_name = f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.display_name"
         self._attr_device_class = None
         self._attr_native_value = hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]
-
