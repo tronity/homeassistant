@@ -138,7 +138,7 @@ class Range(SensorEntity):
             client_secret=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_SECRET],
             vehicle_id=hass.data[DOMAIN][my_api.entry_id][CONF_VEHICLE_ID],
         )
-        self._attr_name = f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.remainig_range"
+        self._attr_name = f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.remaining_range"
         self._attr_device_class = SensorDeviceClass.DISTANCE
         self._attr_native_unit_of_measurement = "km"
         self._attr_native_value = 0
