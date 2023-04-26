@@ -28,6 +28,7 @@ from .const import (
     CONF_CLIENT_SECRET,
     CONF_VEHICLE_ID,
     CONF_DISPLAY_NAME,
+    CONF_DISTANCE_UNIT,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -122,12 +123,12 @@ class Odometer(SensorEntity):
             f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.odometer"
         )
         self._attr_device_class = SensorDeviceClass.DISTANCE
-        self._attr_native_unit_of_measurement = "km"
+        self._attr_native_unit_of_measurement = CONF_DISTANCE_UNIT
         self._attr_native_value = 0
 
     async def async_update(self) -> None:
         data = await self.coordinator._async_update_data()
-        self._attr_native_value = data["odometer"]
+        self._attr_native_value = data["odometer"] if CONF_DISTANCE_UNIT.lower() == "km" else data["odometer"]*0.6213712
 
 
 class Range(SensorEntity):
@@ -140,12 +141,12 @@ class Range(SensorEntity):
         )
         self._attr_name = f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.remaining_range"
         self._attr_device_class = SensorDeviceClass.DISTANCE
-        self._attr_native_unit_of_measurement = "km"
+        self._attr_native_unit_of_measurement = CONF_DISTANCE_UNIT
         self._attr_native_value = 0
 
     async def async_update(self) -> None:
         data = await self.coordinator._async_update_data()
-        self._attr_native_value = data["range"]
+        self._attr_native_value = data["range"] if CONF_DISTANCE_UNIT.lower() == "km" else data["range"]*0.6213712
 
 
 class Level(SensorEntity):

@@ -20,6 +20,7 @@ from .const import (
     CONF_VEHICLE_ID,
     CONF_VEHICLES_URL,
     CONF_DISPLAY_NAME,
+    CONF_DISTANCE_UNIT,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -29,6 +30,7 @@ DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_CLIENT_ID, default=""): str,
         vol.Required(CONF_CLIENT_SECRET, default=""): str,
         vol.Required(CONF_VEHICLE_ID, default=""): str,
+        vol.Required(CONF_DISTANCE_UNIT, default=""): str,
     }
 )
 
@@ -45,6 +47,9 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
 
     title = await hub.get_display_name()
 
+    if data[CONF_DISTANCE_UNIT] not in ['km', 'm']:
+        raise InvalidDistanceUnit
+    
     return {"title": title}
 
 
@@ -124,6 +129,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 info = await validate_input(self.hass, user_input)
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
+            except InvalidDistanceUnit:
+                errors["base"] = "invalid_distance_unit"
             except Exception:
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
@@ -138,3 +145,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 class InvalidAuth(HomeAssistantError):
     """Error to indicate there is invalid auth."""
+
+class InvalidDistanceUnit(HomeAssistantError):
+    """Error to indicate there is invalid distance unit."""
