@@ -31,6 +31,7 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+SCAN_INTERVAL = timedelta(seconds=60)
 
 
 async def get_bearer_token(client_id: str, client_secret: str) -> str:
