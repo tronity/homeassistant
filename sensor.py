@@ -120,11 +120,11 @@ class Odometer(SensorEntity):
         self._attr_device_class = SensorDeviceClass.DISTANCE
         self._attr_native_unit_of_measurement = "km"
         self._attr_native_value = 0
+        self._attr_unique_id = f"{self.coordinator.vehicle_id}_odometer"
 
     async def async_update(self) -> None:
         data = await self.coordinator._async_update_data()
         self._attr_native_value = data["odometer"]
-        print("test")
 
 
 class Range(SensorEntity):
@@ -139,6 +139,7 @@ class Range(SensorEntity):
         self._attr_device_class = SensorDeviceClass.DISTANCE
         self._attr_native_unit_of_measurement = "km"
         self._attr_native_value = 0
+        self._attr_unique_id = f"{self.coordinator.vehicle_id}_remaining_range"
 
     async def async_update(self) -> None:
         data = await self.coordinator._async_update_data()
@@ -157,6 +158,7 @@ class Level(SensorEntity):
         self._attr_device_class = SensorDeviceClass.BATTERY
         self._attr_native_unit_of_measurement = "%"
         self._attr_native_value = 0
+        self._attr_unique_id = f"{self.coordinator.vehicle_id}_battery_level"
 
     async def async_update(self) -> None:
         data = await self.coordinator._async_update_data()
@@ -176,6 +178,7 @@ class Charging(SensorEntity):
         )
         self._attr_device_class = None
         self._attr_native_value = 0
+        self._attr_unique_id = f"{self.coordinator.vehicle_id}_charging"
 
     async def async_update(self) -> None:
         data = await self.coordinator._async_update_data()
@@ -197,6 +200,7 @@ class Plugged(SensorEntity):
         self._attr_device_class = SensorDeviceClass.ENUM
         self._attr_options = [False, True]
         self._attr_native_value = False
+        self._attr_unique_id = f"{self.coordinator.vehicle_id}_plugged"
 
     async def async_update(self) -> None:
         data = await self.coordinator._async_update_data()
@@ -215,6 +219,7 @@ class ChargerPower(SensorEntity):
         self._attr_device_class = SensorDeviceClass.POWER
         self._attr_native_unit_of_measurement = "kW"
         self._attr_native_value = 0
+        self._attr_unique_id = f"{self.coordinator.vehicle_id}_charger_power"
 
     async def async_update(self) -> None:
         data = await self.coordinator._async_update_data()
@@ -233,6 +238,7 @@ class ChargeRemainingTime(SensorEntity):
         self._attr_device_class = SensorDeviceClass.DURATION
         self._attr_native_unit_of_measurement = "min"
         self._attr_native_value = 0
+        self._attr_unique_id = f"{self.coordinator.vehicle_id}_charge_remaining_time"
 
     async def async_update(self) -> None:
         data = await self.coordinator._async_update_data()
@@ -241,6 +247,13 @@ class ChargeRemainingTime(SensorEntity):
 
 class DisplayName(SensorEntity):
     def __init__(self, hass: HomeAssistant, my_api: ConfigEntry) -> None:
+        self.coordinator = TronityCoordinator(
+            hass,
+            client_id=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_ID],
+            client_secret=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_SECRET],
+            vehicle_id=hass.data[DOMAIN][my_api.entry_id][CONF_VEHICLE_ID],
+        )
         self._attr_name = f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.display_name"
         self._attr_device_class = None
         self._attr_native_value = hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]
+        self._attr_unique_id = f"{self.coordinator.vehicle_id}_display_name"
