@@ -79,12 +79,7 @@ class TronityCoordinator(DataUpdateCoordinator):
     def __init__(
         self, hass: HomeAssistant, client_id: str, client_secret: str, vehicle_id: str
     ) -> None:
-        super().__init__(
-            hass,
-            _LOGGER,
-            name="tronity",
-            update_interval=timedelta(minutes=1),
-        )
+        super().__init__(hass, _LOGGER, name="tronity")
         self.client_id = client_id
         self.client_secret = client_secret
         self.vehicle_id = vehicle_id
@@ -129,6 +124,7 @@ class Odometer(SensorEntity):
     async def async_update(self) -> None:
         data = await self.coordinator._async_update_data()
         self._attr_native_value = data["odometer"]
+        print("test")
 
 
 class Range(SensorEntity):
