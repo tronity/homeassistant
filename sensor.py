@@ -13,7 +13,6 @@ from homeassistant.components.sensor import (
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
@@ -56,18 +55,24 @@ async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
-    discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
+    coordinator = TronityCoordinator(
+        hass,
+        client_id=config_entry.data[CONF_CLIENT_ID],
+        client_secret=config_entry.data[CONF_CLIENT_SECRET],
+        vehicle_id=config_entry.data[CONF_VEHICLE_ID],
+    )
+    await coordinator.async_refresh()
     async_add_entities(
         [
-            Odometer(hass, config_entry),
-            Range(hass, config_entry),
-            Level(hass, config_entry),
-            Charging(hass, config_entry),
-            Plugged(hass, config_entry),
-            ChargerPower(hass, config_entry),
-            ChargeRemainingTime(hass, config_entry),
-            DisplayName(hass, config_entry),
+            Odometer(hass, coordinator, config_entry),
+            Range(hass, coordinator, config_entry),
+            Level(hass, coordinator, config_entry),
+            Charging(hass, coordinator, config_entry),
+            Plugged(hass, coordinator, config_entry),
+            ChargerPower(hass, coordinator, config_entry),
+            ChargeRemainingTime(hass, coordinator, config_entry),
+            DisplayName(hass, coordinator, config_entry),
         ],
         True,
     )
@@ -96,8 +101,8 @@ class TronityCoordinator(DataUpdateCoordinator):
                         self.base_url + self.vehicle_id + "/last_record",
                         headers=headers,
                     ) as response:
-                        data = await response.json(content_type="application/json")
-                        return data
+                        self.data = await response.json()
+                        return self.data
         except asyncio.TimeoutError as exc:
             raise UpdateFailed("Timeout while communicating with API") from exc
         except aiohttp.ClientError as err:
@@ -107,16 +112,13 @@ class TronityCoordinator(DataUpdateCoordinator):
 
 
 class Odometer(SensorEntity):
-    def __init__(self, hass: HomeAssistant, my_api: ConfigEntry) -> None:
-        self.coordinator = TronityCoordinator(
-            hass,
-            client_id=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_ID],
-            client_secret=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_SECRET],
-            vehicle_id=hass.data[DOMAIN][my_api.entry_id][CONF_VEHICLE_ID],
-        )
+    def __init__(
+        self, hass: HomeAssistant, coordinator: TronityCoordinator, my_api: ConfigEntry
+    ) -> None:
         self._attr_name = (
             f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.odometer"
         )
+        self.coordinator = coordinator
         self._attr_device_class = SensorDeviceClass.DISTANCE
         self._attr_native_unit_of_measurement = "km"
         self._attr_native_value = 0
@@ -128,13 +130,10 @@ class Odometer(SensorEntity):
 
 
 class Range(SensorEntity):
-    def __init__(self, hass: HomeAssistant, my_api: ConfigEntry) -> None:
-        self.coordinator = TronityCoordinator(
-            hass,
-            client_id=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_ID],
-            client_secret=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_SECRET],
-            vehicle_id=hass.data[DOMAIN][my_api.entry_id][CONF_VEHICLE_ID],
-        )
+    def __init__(
+        self, hass: HomeAssistant, coordinator: TronityCoordinator, my_api: ConfigEntry
+    ) -> None:
+        self.coordinator = coordinator
         self._attr_name = f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.remaining_range"
         self._attr_device_class = SensorDeviceClass.DISTANCE
         self._attr_native_unit_of_measurement = "km"
@@ -142,18 +141,16 @@ class Range(SensorEntity):
         self._attr_unique_id = f"{self.coordinator.vehicle_id}_remaining_range"
 
     async def async_update(self) -> None:
-        data = await self.coordinator._async_update_data()
-        self._attr_native_value = data["range"]
+        data = self.coordinator.data
+        if data is not None:
+            self._attr_native_value = data["range"]
 
 
 class Level(SensorEntity):
-    def __init__(self, hass: HomeAssistant, my_api: ConfigEntry) -> None:
-        self.coordinator = TronityCoordinator(
-            hass,
-            client_id=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_ID],
-            client_secret=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_SECRET],
-            vehicle_id=hass.data[DOMAIN][my_api.entry_id][CONF_VEHICLE_ID],
-        )
+    def __init__(
+        self, hass: HomeAssistant, coordinator: TronityCoordinator, my_api: ConfigEntry
+    ) -> None:
+        self.coordinator = coordinator
         self._attr_name = f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.battery_level"
         self._attr_device_class = SensorDeviceClass.BATTERY
         self._attr_native_unit_of_measurement = "%"
@@ -161,18 +158,16 @@ class Level(SensorEntity):
         self._attr_unique_id = f"{self.coordinator.vehicle_id}_battery_level"
 
     async def async_update(self) -> None:
-        data = await self.coordinator._async_update_data()
-        self._attr_native_value = data["level"]
+        data = self.coordinator.data
+        if data is not None:
+            self._attr_native_value = data["level"]
 
 
 class Charging(SensorEntity):
-    def __init__(self, hass: HomeAssistant, my_api: ConfigEntry) -> None:
-        self.coordinator = TronityCoordinator(
-            hass,
-            client_id=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_ID],
-            client_secret=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_SECRET],
-            vehicle_id=hass.data[DOMAIN][my_api.entry_id][CONF_VEHICLE_ID],
-        )
+    def __init__(
+        self, hass: HomeAssistant, coordinator: TronityCoordinator, my_api: ConfigEntry
+    ) -> None:
+        self.coordinator = coordinator
         self._attr_name = (
             f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.charging"
         )
@@ -181,18 +176,16 @@ class Charging(SensorEntity):
         self._attr_unique_id = f"{self.coordinator.vehicle_id}_charging"
 
     async def async_update(self) -> None:
-        data = await self.coordinator._async_update_data()
-        self._attr_native_value = data["charging"]
+        data = self.coordinator.data
+        if data is not None:
+            self._attr_native_value = data["charging"]
 
 
 class Plugged(SensorEntity):
-    def __init__(self, hass: HomeAssistant, my_api: ConfigEntry) -> None:
-        self.coordinator = TronityCoordinator(
-            hass,
-            client_id=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_ID],
-            client_secret=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_SECRET],
-            vehicle_id=hass.data[DOMAIN][my_api.entry_id][CONF_VEHICLE_ID],
-        )
+    def __init__(
+        self, hass: HomeAssistant, coordinator: TronityCoordinator, my_api: ConfigEntry
+    ) -> None:
+        self.coordinator = coordinator
         self._attr_name = (
             f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.plugged"
         )
@@ -203,18 +196,16 @@ class Plugged(SensorEntity):
         self._attr_unique_id = f"{self.coordinator.vehicle_id}_plugged"
 
     async def async_update(self) -> None:
-        data = await self.coordinator._async_update_data()
-        self._attr_native_value = data["plugged"]
+        data = self.coordinator.data
+        if data is not None:
+            self._attr_native_value = data["plugged"]
 
 
 class ChargerPower(SensorEntity):
-    def __init__(self, hass: HomeAssistant, my_api: ConfigEntry) -> None:
-        self.coordinator = TronityCoordinator(
-            hass,
-            client_id=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_ID],
-            client_secret=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_SECRET],
-            vehicle_id=hass.data[DOMAIN][my_api.entry_id][CONF_VEHICLE_ID],
-        )
+    def __init__(
+        self, hass: HomeAssistant, coordinator: TronityCoordinator, my_api: ConfigEntry
+    ) -> None:
+        self.coordinator = coordinator
         self._attr_name = f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.charger_power"
         self._attr_device_class = SensorDeviceClass.POWER
         self._attr_native_unit_of_measurement = "kW"
@@ -222,18 +213,16 @@ class ChargerPower(SensorEntity):
         self._attr_unique_id = f"{self.coordinator.vehicle_id}_charger_power"
 
     async def async_update(self) -> None:
-        data = await self.coordinator._async_update_data()
-        self._attr_native_value = data["chargerPower"]
+        data = self.coordinator.data
+        if data is not None:
+            self._attr_native_value = data["chargerPower"]
 
 
 class ChargeRemainingTime(SensorEntity):
-    def __init__(self, hass: HomeAssistant, my_api: ConfigEntry) -> None:
-        self.coordinator = TronityCoordinator(
-            hass,
-            client_id=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_ID],
-            client_secret=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_SECRET],
-            vehicle_id=hass.data[DOMAIN][my_api.entry_id][CONF_VEHICLE_ID],
-        )
+    def __init__(
+        self, hass: HomeAssistant, coordinator: TronityCoordinator, my_api: ConfigEntry
+    ) -> None:
+        self.coordinator = coordinator
         self._attr_name = f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.charge_remaining_time"
         self._attr_device_class = SensorDeviceClass.DURATION
         self._attr_native_unit_of_measurement = "min"
@@ -241,18 +230,16 @@ class ChargeRemainingTime(SensorEntity):
         self._attr_unique_id = f"{self.coordinator.vehicle_id}_charge_remaining_time"
 
     async def async_update(self) -> None:
-        data = await self.coordinator._async_update_data()
-        self._attr_native_value = data["chargeRemainingTime"]
+        data = self.coordinator.data
+        if data is not None:
+            self._attr_native_value = data["chargerPower"]
 
 
 class DisplayName(SensorEntity):
-    def __init__(self, hass: HomeAssistant, my_api: ConfigEntry) -> None:
-        self.coordinator = TronityCoordinator(
-            hass,
-            client_id=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_ID],
-            client_secret=hass.data[DOMAIN][my_api.entry_id][CONF_CLIENT_SECRET],
-            vehicle_id=hass.data[DOMAIN][my_api.entry_id][CONF_VEHICLE_ID],
-        )
+    def __init__(
+        self, hass: HomeAssistant, coordinator: TronityCoordinator, my_api: ConfigEntry
+    ) -> None:
+        self.coordinator = coordinator
         self._attr_name = f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.display_name"
         self._attr_device_class = None
         self._attr_native_value = hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]
