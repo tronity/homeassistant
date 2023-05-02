@@ -109,6 +109,8 @@ class TronityCoordinator(DataUpdateCoordinator):
             raise _LOGGER(
                 f"Error communicating with API: {err}. Retrying in a few seconds"
             ) from err
+        except Exception:
+            _LOGGER.exception("Unexpected error while fetching data from API")
 
 
 class Odometer(SensorEntity):
@@ -225,7 +227,7 @@ class ChargeRemainingTime(SensorEntity):
         self.coordinator = coordinator
         self._attr_name = f"tronity.{hass.data[DOMAIN][my_api.entry_id][CONF_DISPLAY_NAME]}.charge_remaining_time"
         self._attr_device_class = SensorDeviceClass.DURATION
-        self._attr_native_unit_of_measurement = "min"
+        self._attr_native_unit_of_measurement = "s"
         self._attr_native_value = 0
         self._attr_unique_id = f"{self.coordinator.vehicle_id}_charge_remaining_time"
 
