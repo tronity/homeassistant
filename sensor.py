@@ -36,17 +36,22 @@ SCAN_INTERVAL = timedelta(seconds=60)
 async def get_bearer_token(client_id: str, client_secret: str) -> str:
     base_url = CONF_BASE_URL
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            base_url,
-            data={
-                "client_id": client_id,
-                "client_secret": client_secret,
-                "grant_type": "app",
-            },
-        ) as response:
-            response_json = await response.json()
-            bearer_token = response_json.get("access_token")
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                base_url,
+                data={
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "grant_type": "app",
+                },
+            ) as response:
+                response_json = await response.json()
+                bearer_token = response_json.get("access_token")
+
+    except aiohttp.client_exceptions.ContentTypeError:
+        _LOGGER.warning("Failed to decode JSON response, trying again in one minute")
+        bearer_token = None
 
     return bearer_token
 
@@ -94,23 +99,21 @@ class TronityCoordinator(DataUpdateCoordinator):
         bearer_token = await get_bearer_token(self.client_id, self.client_secret)
         headers = {"Authorization": f"Bearer {bearer_token}"}
 
-        try:
-            async with async_timeout.timeout(30):
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(
-                        self.base_url + self.vehicle_id + "/last_record",
-                        headers=headers,
-                    ) as response:
-                        self.data = await response.json()
-                        return self.data
-        except asyncio.TimeoutError as exc:
-            raise UpdateFailed("Timeout while communicating with API") from exc
-        except aiohttp.ClientError as err:
-            raise _LOGGER(
-                f"Error communicating with API: {err}. Retrying in a few seconds"
-            ) from err
-        except Exception:
-            _LOGGER.exception("Unexpected error while fetching data from API")
+        if bearer_token == None:
+            return self.data
+
+        else:
+            try:
+                async with async_timeout.timeout(30):
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(
+                            self.base_url + self.vehicle_id + "/last_record",
+                            headers=headers,
+                        ) as response:
+                            self.data = await response.json()
+                            return self.data
+            except asyncio.TimeoutError as exc:
+                raise UpdateFailed("Timeout while communicating with API") from exc
 
 
 class Odometer(SensorEntity):
@@ -128,7 +131,8 @@ class Odometer(SensorEntity):
 
     async def async_update(self) -> None:
         data = await self.coordinator._async_update_data()
-        self._attr_native_value = data["odometer"]
+        if data is not None:
+            self._attr_native_value = data["odometer"]
 
 
 class Range(SensorEntity):
