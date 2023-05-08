@@ -67,6 +67,7 @@ async def async_setup_entry(
         client_secret=config_entry.data[CONF_CLIENT_SECRET],
         vehicle_id=config_entry.data[CONF_VEHICLE_ID],
     )
+    await coordinator.async_refresh()
     async_add_entities(
         [
             Odometer(hass, coordinator, config_entry),
