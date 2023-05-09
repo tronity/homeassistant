@@ -1,5 +1,6 @@
 """The Tronity integration."""
 from __future__ import annotations
+from typing import Any
 import aiohttp
 import async_timeout
 import asyncio
@@ -21,7 +22,6 @@ from .const import (
     CONF_CLIENT_ID,
     CONF_VEHICLE_ID,
     CONF_CLIENT_SECRET,
-    CONF_VEHICLE_DATA,
     CONF_AUTH_URL,
     CONF_DATA_COORDINATOR,
     CONF_VEHICLES_URL,
@@ -70,7 +70,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         headers=headers,
                     ) as response:
                         data = await response.json()
-                        hass.data[DOMAIN][entry.entry_id][CONF_VEHICLE_DATA] = data
                         return data
 
         except asyncio.TimeoutError as exc:
@@ -109,6 +108,11 @@ class TronityEntity(CoordinatorEntity):
     """Defines a base Mazda entity."""
 
     _attr_has_entity_name = True
+
+    def __init__(self, coordinator, entry) -> None:
+        super().__init__(coordinator)
+        self.vehicle_id = entry.data[CONF_VEHICLE_ID]
+        self.display_name = entry.title
 
     @property
     def data(self):
