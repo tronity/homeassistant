@@ -94,7 +94,7 @@ class TronitySensorEntity(SensorEntity, TronityEntity):
     @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
-        return self.coordinator.data[self.entity_description.key]
+        return self.data[self.entity_description.key]
 
 
 class DisplayName(SensorEntity, TronityEntity):
@@ -116,5 +116,4 @@ class DisplayName(SensorEntity, TronityEntity):
     @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
-
         return self.display_name

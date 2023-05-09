@@ -35,8 +35,8 @@ PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.DEVICE_TRACKER]
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Tronity from a config entry."""
 
-    client_id = (entry.data[CONF_CLIENT_ID],)
-    client_secret = (entry.data[CONF_CLIENT_SECRET],)
+    client_id = entry.data[CONF_CLIENT_ID]
+    client_secret = entry.data[CONF_CLIENT_SECRET]
     vehicle_id = entry.data[CONF_VEHICLE_ID]
     auth_url = CONF_AUTH_URL
     vehicle_url = CONF_VEHICLES_URL
