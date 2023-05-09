@@ -26,14 +26,14 @@ class TronityDeviceTracker(TronityEntity, TrackerEntity):
     _attr_force_update = False
 
     def __init__(self, coordinator, config_entry) -> None:
-        """Initialize Mazda device tracker."""
+        """Initialize Tronity device tracker."""
         super().__init__(coordinator, config_entry)
         self._attr_name = f"{self.vehicle_id}_device_tracker"
         self._attr_unique_id = f"{self.vehicle_id}_device_tracker"
 
     @property
     def source_type(self) -> SourceType:
-        """Return the source type, eg gps or router, of the device."""
+        """Return the source type"""
         return SourceType.GPS
 
     @property

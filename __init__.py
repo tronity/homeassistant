@@ -105,7 +105,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 class TronityEntity(CoordinatorEntity):
-    """Defines a base Mazda entity."""
+    """Defines a base Tronity entity."""
 
     _attr_has_entity_name = True
 
