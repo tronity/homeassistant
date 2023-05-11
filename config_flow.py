@@ -16,7 +16,7 @@ from .const import (
     DOMAIN,
     CONF_CLIENT_ID,
     CONF_CLIENT_SECRET,
-    CONF_BASE_URL,
+    CONF_AUTH_URL,
     CONF_VEHICLE_ID,
     CONF_VEHICLES_URL,
     CONF_DISPLAY_NAME,
@@ -55,7 +55,7 @@ class TronityHub:
         self, hass: HomeAssistant, client_id: str, client_secret: str, vehicle_id: str
     ) -> None:
         """Initialize."""
-        self.base_url = CONF_BASE_URL
+        self.base_url = CONF_AUTH_URL
         self.vehicle_url = CONF_VEHICLES_URL
         self.hass = hass
         self.client_id = client_id
