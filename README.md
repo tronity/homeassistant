@@ -6,6 +6,15 @@ data and create automations based on it.
 
 ## Installation
 
+#### HACS Installation Way
+1. Open HACS
+2. Select Integrations, then select the 3-dots in the upper-right corner, then select Custom Repositories.
+3. Put the Reposity URL in the Repository field, then select Integration in the Category dropdown list and click Add.
+4. Now you can search for Tronity in HACS and install it
+5. After install you need to rebstart Home Assistent
+6. Now you can skip Configuration and proceed with Usage
+
+#### Normalway
 1. Download or clone the Tronity Integration to your local machine.
 2. Navigate to the custom_components directory in your Home Assistant installation directory.
 3. Create a new directory called tronity.
