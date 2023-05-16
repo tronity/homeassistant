@@ -11,7 +11,7 @@ data and create automations based on it.
 2. Select Integrations, then select the 3-dots in the upper-right corner, then select Custom Repositories.
 3. Put the Reposity URL in the Repository field, then select Integration in the Category dropdown list and click Add.
 4. Now you can search for Tronity in HACS and install it
-5. After install you need to rebstart Home Assistent
+5. After the installation you need to restart Home Assistent
 6. Now you can skip Configuration and proceed with Usage
 
 #### Normalway
