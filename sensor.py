@@ -23,7 +23,7 @@ SENSOR_ENTITIES = [
     ),
     SensorEntityDescription(
         key="range",
-        icon="mdi:gas-station",
+        icon="mdi:ev-station",
         device_class=SensorDeviceClass.DISTANCE,
         native_unit_of_measurement="km",
         state_class=SensorStateClass.MEASUREMENT,
