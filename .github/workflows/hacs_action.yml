@@ -7,11 +7,19 @@ on:
     - cron: "0 0 * * *"
 
 jobs:
-  hacs:
-    name: HACS Action
-    runs-on: "ubuntu-latest"
+  validate:
+    runs-on: ubuntu-latest
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Rename root folder to 'tronity'
+        run: mkdir tronity && find . -maxdepth 1 -not -name ".github" -exec mv {} tronity/ \;
+
       - name: HACS Action
-        uses: "hacs/action@main"
+        uses: hacs/action@main
         with:
-          category: "integration"
+          CATEGORY: integration
+
+      - name: hassfest
+        uses: home-assistant/actions/hassfest@master

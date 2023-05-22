@@ -5,8 +5,8 @@
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/tronity/homeassistant",
-  "issue_tracker": "https://github.com/tronity/homeassistant/issues",
   "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/tronity/homeassistant/issues",
   "requirements": [],
   "version": "0.2.0"
 }
