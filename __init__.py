@@ -63,7 +63,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         headers = {"Authorization": f"Bearer {bearer_token}"}
 
         try:
-            async with async_timeout.timeout(30):
+            async with async_timeout.timeout(60):
                 async with aiohttp.ClientSession() as session:
                     async with session.get(
                         vehicle_url + vehicle_id + "/last_record",
