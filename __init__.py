@@ -3,7 +3,6 @@ from cachetools import TTLCache
 from __future__ import annotations
 from typing import Any
 import aiohttp
-import async_timeout
 import asyncio
 from datetime import timedelta
 import logging
@@ -63,6 +62,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     raise UpdateFailed(f"Failed to authenticate: {response.status}")
                 response_json = await response.json()
                 bearer_token = response_json.get("access_token")
+                if not bearer_token:
+                    raise UpdateFailed("Authentication failed: missing access token in response")
                 token_cache[client_id] = bearer_token
                 return bearer_token
 
@@ -72,7 +73,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         headers = {"Authorization": f"Bearer {bearer_token}"}
 
         try:
-            async with async_timeout.timeout(60):
+            async with asyncio.timeout(60):
                 async with aiohttp.ClientSession() as session:
                     async with session.get(
                         vehicle_url + vehicle_id + "/last_record",
