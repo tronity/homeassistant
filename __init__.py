@@ -1,4 +1,5 @@
 """The Tronity integration."""
+from cachetools import TTLCache
 from __future__ import annotations
 from typing import Any
 import aiohttp
@@ -8,6 +9,7 @@ from datetime import timedelta
 import logging
 
 
+from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
@@ -31,6 +33,7 @@ _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.DEVICE_TRACKER]
 
+token_cache = TTLCache(maxsize=1, ttl=300)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Tronity from a config entry."""
@@ -44,17 +47,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async def get_bearer_token(client_id: str, client_secret: str) -> str:
         """Get bearer token for authentication."""
 
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                auth_url,
-                data={
-                    "client_id": client_id,
-                    "client_secret": client_secret,
+        if client_id in token_cache:
+            return token_cache[client_id]
+            
+        session = async_create_clientsession(hass)
+        async with session.post(
+            auth_url,
+            data={
+                "client_id": client_id,
+                "client_secret": client_secret,
                     "grant_type": "app",
                 },
             ) as response:
+                if response.status != 200:
+                    raise UpdateFailed(f"Failed to authenticate: {response.status}")
                 response_json = await response.json()
                 bearer_token = response_json.get("access_token")
+                token_cache[client_id] = bearer_token
                 return bearer_token
 
     async def async_update_data():
