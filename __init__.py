@@ -1,6 +1,6 @@
 """The Tronity integration."""
-from cachetools import TTLCache
 from __future__ import annotations
+from cachetools import TTLCache
 from typing import Any
 import aiohttp
 import asyncio
@@ -58,7 +58,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     "grant_type": "app",
                 },
             ) as response:
-                if response.status != 200:
+                if response.status not in (200, 201):
                     raise UpdateFailed(f"Failed to authenticate: {response.status}")
                 response_json = await response.json()
                 bearer_token = response_json.get("access_token")
