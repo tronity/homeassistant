@@ -11,12 +11,12 @@ from . import TronityEntity
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    async_add_entites: AddEntitiesCallback,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the device tracker platform."""
     coordinator = hass.data[DOMAIN][config_entry.entry_id][CONF_DATA_COORDINATOR]
 
-    async_add_entites([TronityDeviceTracker(coordinator, config_entry)])
+    async_add_entities([TronityDeviceTracker(coordinator, config_entry)])
 
 
 class TronityDeviceTracker(TronityEntity, TrackerEntity):
@@ -43,9 +43,9 @@ class TronityDeviceTracker(TronityEntity, TrackerEntity):
     @property
     def latitude(self):
         """Return latitude value of the device."""
-        return self.coordinator.data["latitude"]
+        return self.coordinator.data.get("latitude")
 
     @property
     def longitude(self):
         """Return longitude value of the device."""
-        return self.coordinator.data["longitude"]
+        return self.coordinator.data.get("longitude")

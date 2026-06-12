@@ -32,7 +32,7 @@ _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.DEVICE_TRACKER]
 
-token_cache = TTLCache(maxsize=1, ttl=300)
+token_cache = TTLCache(maxsize=32, ttl=300)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Tronity from a config entry."""
@@ -43,11 +43,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     auth_url = CONF_AUTH_URL
     vehicle_url = CONF_VEHICLES_URL
 
+    cache_key = entry.entry_id
+
     async def get_bearer_token(client_id: str, client_secret: str) -> str:
         """Get bearer token for authentication."""
 
-        if client_id in token_cache:
-            return token_cache[client_id]
+        if cache_key in token_cache:
+            return token_cache[cache_key]
             
         session = async_create_clientsession(hass)
         async with session.post(
@@ -64,7 +66,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 bearer_token = response_json.get("access_token")
                 if not bearer_token:
                     raise UpdateFailed("Authentication failed: missing access token in response")
-                token_cache[client_id] = bearer_token
+                token_cache[cache_key] = bearer_token
                 return bearer_token
 
     async def async_update_data():
@@ -74,13 +76,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         try:
             async with asyncio.timeout(60):
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(
-                        vehicle_url + vehicle_id + "/last_record",
-                        headers=headers,
-                    ) as response:
-                        data = await response.json()
-                        return data
+                session = async_create_clientsession(hass)
+                async with session.get(
+                    vehicle_url + vehicle_id + "/last_record",
+                    headers=headers,
+                ) as response:
+                    if response.status in (401, 403):
+                        token_cache.pop(cache_key, None)
+                        raise UpdateFailed("Authentication failed while fetching vehicle data")
+                    if response.status >= 400:
+                        raise UpdateFailed(f"Failed to fetch vehicle data: {response.status}")
+
+                    data = await response.json()
+                    return data
 
         except asyncio.TimeoutError as exc:
             raise UpdateFailed("Timeout while communicating with API") from exc

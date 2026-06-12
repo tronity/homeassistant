@@ -1,6 +1,7 @@
 """Config flow for Tronity integration."""
 from __future__ import annotations
 
+import asyncio
 import logging
 import aiohttp
 from typing import Any
@@ -40,10 +41,8 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
         hass, data[CONF_CLIENT_ID], data[CONF_CLIENT_SECRET], data[CONF_VEHICLE_ID]
     )
 
-    if not await hub.authenticate():
-        raise InvalidAuth
-
-    title = await hub.get_display_name()
+    bearer_token = await hub.authenticate()
+    title = await hub.get_display_name(bearer_token)
 
     return {"title": title}
 
@@ -63,49 +62,54 @@ class TronityHub:
         self.vehicle_id = vehicle_id
 
     async def get_bearer_token(self) -> str:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                self.base_url,
-                data={
-                    "client_id": self.client_id,
-                    "client_secret": self.client_secret,
-                    "grant_type": "app",
-                },
-            ) as response:
-                response_json = await response.json()
-                bearer_token = response_json.get("access_token")
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    self.base_url,
+                    data={
+                        "client_id": self.client_id,
+                        "client_secret": self.client_secret,
+                        "grant_type": "app",
+                    },
+                    timeout=10,
+                ) as response:
+                    if response.status in (401, 403):
+                        raise InvalidAuth
+                    if response.status >= 400:
+                        raise CannotConnect
 
-        return bearer_token
+                    response_json = await response.json()
+                    bearer_token = response_json.get("access_token")
+                    if not bearer_token:
+                        raise InvalidAuth
+                    return bearer_token
+        except (aiohttp.ClientError, asyncio.TimeoutError) as err:
+            raise CannotConnect from err
 
-    async def get_display_name(self) -> str:
-        bearer_token = await self.get_bearer_token()
+    async def get_display_name(self, bearer_token: str) -> str:
         headers = {"Authorization": f"Bearer {bearer_token}"}
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                self.vehicle_url + self.vehicle_id,
-                headers=headers,
-            ) as response:
-                data = await response.json()
-                return data["displayName"]
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    self.vehicle_url + self.vehicle_id,
+                    headers=headers,
+                    timeout=10,
+                ) as response:
+                    if response.status in (401, 403):
+                        raise InvalidAuth
+                    if response.status >= 400:
+                        raise CannotConnect
 
-    async def get_api_status(self) -> int:
-        """Handle the start of the TronityHub config flow, validating user input and creating an entry."""
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                self.base_url,
-                data={
-                    "client_id": self.client_id,
-                    "client_secret": self.client_secret,
-                    "grant_type": "app",
-                },
-            ) as response:
-                return response.status
+                    data = await response.json()
+                    display_name = data.get("displayName")
+                    if not display_name:
+                        raise CannotConnect
+                    return display_name
+        except (aiohttp.ClientError, asyncio.TimeoutError) as err:
+            raise CannotConnect from err
 
-    async def authenticate(self) -> bool:
-        status_code = await self.get_api_status()
-
-        if status_code == 201 or status_code == 200:
-            return True
+    async def authenticate(self) -> str:
+        return await self.get_bearer_token()
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -120,10 +124,15 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
+            await self.async_set_unique_id(user_input[CONF_VEHICLE_ID])
+            self._abort_if_unique_id_configured()
+
             try:
                 info = await validate_input(self.hass, user_input)
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
+            except CannotConnect:
+                errors["base"] = "cannot_connect"
             except Exception:
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
@@ -138,3 +147,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 class InvalidAuth(HomeAssistantError):
     """Error to indicate there is invalid auth."""
+
+
+class CannotConnect(HomeAssistantError):
+    """Error to indicate there was a connection problem."""
