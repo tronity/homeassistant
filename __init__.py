@@ -34,6 +34,10 @@ PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.DEVICE_TRACKER]
 
 token_cache = TTLCache(maxsize=32, ttl=300)
 
+
+class AuthFailedDuringFetch(UpdateFailed):
+    """Raised when vehicle data fetch fails due to invalid authentication."""
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Tronity from a config entry."""
 
@@ -50,15 +54,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         if cache_key in token_cache:
             return token_cache[cache_key]
-            
-        session = async_create_clientsession(hass)
-        async with session.post(
-            auth_url,
-            data={
-                "client_id": client_id,
-                "client_secret": client_secret,
+
+        try:
+            session = async_create_clientsession(hass)
+            async with session.post(
+                auth_url,
+                data={
+                    "client_id": client_id,
+                    "client_secret": client_secret,
                     "grant_type": "app",
                 },
+                timeout=10,
             ) as response:
                 if response.status not in (200, 201):
                     raise UpdateFailed(f"Failed to authenticate: {response.status}")
@@ -68,30 +74,42 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     raise UpdateFailed("Authentication failed: missing access token in response")
                 token_cache[cache_key] = bearer_token
                 return bearer_token
+        except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
+            raise UpdateFailed("Error while communicating with authentication API") from exc
 
     async def async_update_data():
         """Fetch data from Tronity API."""
-        bearer_token = await get_bearer_token(client_id, client_secret)
-        headers = {"Authorization": f"Bearer {bearer_token}"}
+        async def fetch_last_record(token: str) -> dict[str, Any]:
+            headers = {"Authorization": f"Bearer {token}"}
+            session = async_create_clientsession(hass)
+            async with session.get(
+                vehicle_url + vehicle_id + "/last_record",
+                headers=headers,
+            ) as response:
+                if response.status in (401, 403):
+                    raise AuthFailedDuringFetch(
+                        "Authentication failed while fetching vehicle data"
+                    )
+                if response.status >= 400:
+                    raise UpdateFailed(f"Failed to fetch vehicle data: {response.status}")
+
+                data = await response.json()
+                return data
 
         try:
             async with asyncio.timeout(60):
-                session = async_create_clientsession(hass)
-                async with session.get(
-                    vehicle_url + vehicle_id + "/last_record",
-                    headers=headers,
-                ) as response:
-                    if response.status in (401, 403):
-                        token_cache.pop(cache_key, None)
-                        raise UpdateFailed("Authentication failed while fetching vehicle data")
-                    if response.status >= 400:
-                        raise UpdateFailed(f"Failed to fetch vehicle data: {response.status}")
-
-                    data = await response.json()
-                    return data
+                bearer_token = await get_bearer_token(client_id, client_secret)
+                try:
+                    return await fetch_last_record(bearer_token)
+                except AuthFailedDuringFetch:
+                    token_cache.pop(cache_key, None)
+                    refreshed_token = await get_bearer_token(client_id, client_secret)
+                    return await fetch_last_record(refreshed_token)
 
         except asyncio.TimeoutError as exc:
             raise UpdateFailed("Timeout while communicating with API") from exc
+        except aiohttp.ClientError as exc:
+            raise UpdateFailed("Error while communicating with vehicle API") from exc
 
     coordinator = DataUpdateCoordinator(
         hass,
