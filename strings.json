@@ -5,8 +5,18 @@
         "data": {
           "client_id": "Client Id",
           "client_secret": "Client Secret",
-          "vehicle_id": "Vehicle Id"
+          "vehicle_id": "Vehicle Id",
+          "poll_interval": "Poll interval (seconds)"
 
+        }
+      }
+    },
+    "options": {
+      "step": {
+        "init": {
+          "data": {
+            "poll_interval": "Poll interval (seconds)"
+          }
         }
       }
     },

@@ -4,6 +4,7 @@ import sys
 import types
 import unittest
 from dataclasses import dataclass
+from dataclasses import field
 from pathlib import Path
 from typing import Optional
 
@@ -59,6 +60,7 @@ class FakeConfigEntry:
     data: dict
     entry_id: str
     title: str = "Tronity Vehicle"
+    options: dict = field(default_factory=dict)
 
 
 class FakeTTLCache(dict):

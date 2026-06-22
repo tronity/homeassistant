@@ -24,6 +24,10 @@ def _required(key, default=None):
     return key
 
 
+def _optional(key, default=None):
+    return key
+
+
 class FakeConfigFlowBase:
     def __init_subclass__(cls, **kwargs):
         return super().__init_subclass__()
@@ -39,8 +43,24 @@ class FakeConfigFlowBase:
     def async_abort(self, reason):
         return {"type": "abort", "reason": reason}
 
+    def async_create_entry(self, title, data):
+        return {"type": "create_entry", "title": title, "data": data}
+
     def add_suggested_values_to_schema(self, schema, suggested_values):
         return schema
+
+
+class FakeOptionsFlowBase:
+    def async_show_form(self, step_id, data_schema=None, errors=None):
+        return {
+            "type": "form",
+            "step_id": step_id,
+            "data_schema": data_schema,
+            "errors": errors or {},
+        }
+
+    def async_create_entry(self, title, data):
+        return {"type": "create_entry", "title": title, "data": data}
 
 
 @dataclass
@@ -80,6 +100,7 @@ class FakeHass:
 def _install_stubs() -> None:
     voluptuous_module = types.ModuleType("voluptuous")
     voluptuous_module.Required = _required
+    voluptuous_module.Optional = _optional
     voluptuous_module.Schema = FakeSchema
     sys.modules["voluptuous"] = voluptuous_module
 
@@ -96,6 +117,7 @@ def _install_stubs() -> None:
 
     config_entries_module = types.ModuleType("homeassistant.config_entries")
     config_entries_module.ConfigFlow = FakeConfigFlowBase
+    config_entries_module.OptionsFlow = FakeOptionsFlowBase
     config_entries_module.ConfigEntry = FakeConfigEntry
     sys.modules["homeassistant.config_entries"] = config_entries_module
     homeassistant_module.config_entries = config_entries_module

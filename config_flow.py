@@ -19,6 +19,8 @@ from .const import (
     DOMAIN,
     CONF_CLIENT_ID,
     CONF_CLIENT_SECRET,
+    CONF_POLL_INTERVAL,
+    DEFAULT_POLL_INTERVAL,
     CONF_AUTH_URL,
     CONF_VEHICLE_ID,
     CONF_VEHICLES_URL,
@@ -32,6 +34,7 @@ DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_CLIENT_ID, default=""): str,
         vol.Required(CONF_CLIENT_SECRET, default=""): str,
         vol.Required(CONF_VEHICLE_ID, default=""): str,
+        vol.Optional(CONF_POLL_INTERVAL, default=DEFAULT_POLL_INTERVAL): int,
     }
 )
 
@@ -127,6 +130,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
     _reauth_entry: ConfigEntry | None = None
 
+    @staticmethod
+    def async_get_options_flow(config_entry: ConfigEntry):
+        """Create the options flow."""
+        return TronityOptionsFlow(config_entry)
+
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
@@ -219,3 +227,34 @@ class InvalidAuth(HomeAssistantError):
 
 class CannotConnect(HomeAssistantError):
     """Error to indicate there was a connection problem."""
+
+
+class TronityOptionsFlow(config_entries.OptionsFlow):
+    """Handle Tronity options."""
+
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        self.config_entry = config_entry
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Manage options."""
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_POLL_INTERVAL,
+                        default=self.config_entry.options.get(
+                            CONF_POLL_INTERVAL,
+                            self.config_entry.data.get(
+                                CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL
+                            ),
+                        ),
+                    ): int,
+                }
+            ),
+        )

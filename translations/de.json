@@ -13,7 +13,17 @@
                 "data": {
                     "client_id": "Client Id",
                     "client_secret": "Client Secret",
-                    "vehicle_id": "Vehicle Id"
+                    "vehicle_id": "Vehicle Id",
+                    "poll_interval": "Abfrageintervall (Sekunden)"
+                }
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "poll_interval": "Abfrageintervall (Sekunden)"
                 }
             }
         }

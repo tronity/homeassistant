@@ -25,6 +25,8 @@ from .const import (
     CONF_CLIENT_ID,
     CONF_VEHICLE_ID,
     CONF_CLIENT_SECRET,
+    CONF_POLL_INTERVAL,
+    DEFAULT_POLL_INTERVAL,
     CONF_AUTH_URL,
     CONF_DATA_COORDINATOR,
     CONF_VEHICLES_URL,
@@ -54,6 +56,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     vehicle_url = CONF_VEHICLES_URL
 
     cache_key = entry.entry_id
+    poll_interval = entry.options.get(
+        CONF_POLL_INTERVAL,
+        entry.data.get(CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL),
+    )
 
     async def get_bearer_token(client_id: str, client_secret: str) -> str:
         """Get bearer token for authentication."""
@@ -140,7 +146,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER,
         name=DOMAIN,
         update_method=async_update_data,
-        update_interval=timedelta(seconds=60),
+        update_interval=timedelta(seconds=poll_interval),
     )
 
     hass.data.setdefault(DOMAIN, {})
