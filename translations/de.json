@@ -6,6 +6,7 @@
         "error": {
             "cannot_connect": "Verbindung fehlgeschlagen",
             "invalid_auth": "Authentifizierung fehlgeschlagen",
+            "invalid_poll_interval": "Das Abfrageintervall muss zwischen 60 und 86400 Sekunden liegen.",
             "unknown": "Unerwarteter Fehler"
         },
         "step": {

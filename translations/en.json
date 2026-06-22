@@ -6,6 +6,7 @@
         "error": {
             "cannot_connect": "Failed to connect",
             "invalid_auth": "Invalid authentication",
+            "invalid_poll_interval": "Poll interval must be between 60 and 86400 seconds.",
             "unknown": "Unexpected error"
         },
         "step": {

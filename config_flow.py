@@ -21,6 +21,8 @@ from .const import (
     CONF_CLIENT_SECRET,
     CONF_POLL_INTERVAL,
     DEFAULT_POLL_INTERVAL,
+    MIN_POLL_INTERVAL,
+    MAX_POLL_INTERVAL,
     CONF_AUTH_URL,
     CONF_VEHICLE_ID,
     CONF_VEHICLES_URL,
@@ -57,6 +59,10 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     title = await hub.get_display_name(bearer_token)
 
     return {"title": title}
+
+
+def _valid_poll_interval(value: Any) -> bool:
+    return isinstance(value, int) and MIN_POLL_INTERVAL <= value <= MAX_POLL_INTERVAL
 
 
 class TronityHub:
@@ -142,6 +148,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
+            if not _valid_poll_interval(user_input.get(CONF_POLL_INTERVAL)):
+                errors["base"] = "invalid_poll_interval"
+                return self.async_show_form(
+                    step_id="user", data_schema=DATA_SCHEMA, errors=errors
+                )
+
             await self.async_set_unique_id(user_input[CONF_VEHICLE_ID])
             self._abort_if_unique_id_configured()
 
@@ -240,6 +252,24 @@ class TronityOptionsFlow(config_entries.OptionsFlow):
     ) -> FlowResult:
         """Manage options."""
         if user_input is not None:
+            if not _valid_poll_interval(user_input.get(CONF_POLL_INTERVAL)):
+                return self.async_show_form(
+                    step_id="init",
+                    data_schema=vol.Schema(
+                        {
+                            vol.Required(
+                                CONF_POLL_INTERVAL,
+                                default=self.config_entry.options.get(
+                                    CONF_POLL_INTERVAL,
+                                    self.config_entry.data.get(
+                                        CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL
+                                    ),
+                                ),
+                            ): int,
+                        }
+                    ),
+                    errors={"base": "invalid_poll_interval"},
+                )
             return self.async_create_entry(title="", data=user_input)
 
         return self.async_show_form(

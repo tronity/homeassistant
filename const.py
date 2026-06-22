@@ -11,6 +11,8 @@ CONF_DATA_COORDINATOR = "coordinator"
 CONF_POLL_INTERVAL = "poll_interval"
 
 DEFAULT_POLL_INTERVAL = 60
+MIN_POLL_INTERVAL = 60
+MAX_POLL_INTERVAL = 86400
 
 CONF_AUTH_URL = "https://api.tronity.tech/authentication"
 CONF_VEHICLES_URL = "https://api.tronity.tech/tronity/vehicles/"
