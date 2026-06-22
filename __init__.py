@@ -8,6 +8,7 @@ from datetime import timedelta
 import logging
 
 
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -66,12 +67,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 },
                 timeout=10,
             ) as response:
+                if response.status in (401, 403):
+                    raise ConfigEntryAuthFailed(
+                        "Authentication failed with provided credentials"
+                    )
                 if response.status not in (200, 201):
                     raise UpdateFailed(f"Failed to authenticate: {response.status}")
                 response_json = await response.json()
                 bearer_token = response_json.get("access_token")
                 if not bearer_token:
-                    raise UpdateFailed("Authentication failed: missing access token in response")
+                    raise ConfigEntryAuthFailed(
+                        "Authentication failed: missing access token in response"
+                    )
                 token_cache[cache_key] = bearer_token
                 return bearer_token
         except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
