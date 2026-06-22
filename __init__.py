@@ -111,7 +111,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 except AuthFailedDuringFetch:
                     token_cache.pop(cache_key, None)
                     refreshed_token = await get_bearer_token(client_id, client_secret)
-                    return await fetch_last_record(refreshed_token)
+                    try:
+                        return await fetch_last_record(refreshed_token)
+                    except AuthFailedDuringFetch as exc:
+                        raise ConfigEntryAuthFailed(
+                            "Authentication failed with provided credentials"
+                        ) from exc
 
         except asyncio.TimeoutError as exc:
             raise UpdateFailed("Timeout while communicating with API") from exc
