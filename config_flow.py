@@ -12,6 +12,7 @@ from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
 from .const import (
     DOMAIN,
@@ -63,48 +64,48 @@ class TronityHub:
 
     async def get_bearer_token(self) -> str:
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    self.base_url,
-                    data={
-                        "client_id": self.client_id,
-                        "client_secret": self.client_secret,
-                        "grant_type": "app",
-                    },
-                    timeout=10,
-                ) as response:
-                    if response.status in (401, 403):
-                        raise InvalidAuth
-                    if response.status >= 400:
-                        raise CannotConnect
+            session = async_create_clientsession(self.hass)
+            async with session.post(
+                self.base_url,
+                data={
+                    "client_id": self.client_id,
+                    "client_secret": self.client_secret,
+                    "grant_type": "app",
+                },
+                timeout=10,
+            ) as response:
+                if response.status in (401, 403):
+                    raise InvalidAuth
+                if response.status >= 400:
+                    raise CannotConnect
 
-                    response_json = await response.json()
-                    bearer_token = response_json.get("access_token")
-                    if not bearer_token:
-                        raise InvalidAuth
-                    return bearer_token
+                response_json = await response.json()
+                bearer_token = response_json.get("access_token")
+                if not bearer_token:
+                    raise InvalidAuth
+                return bearer_token
         except (aiohttp.ClientError, asyncio.TimeoutError) as err:
             raise CannotConnect from err
 
     async def get_display_name(self, bearer_token: str) -> str:
         headers = {"Authorization": f"Bearer {bearer_token}"}
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    self.vehicle_url + self.vehicle_id,
-                    headers=headers,
-                    timeout=10,
-                ) as response:
-                    if response.status in (401, 403):
-                        raise InvalidAuth
-                    if response.status >= 400:
-                        raise CannotConnect
+            session = async_create_clientsession(self.hass)
+            async with session.get(
+                self.vehicle_url + self.vehicle_id,
+                headers=headers,
+                timeout=10,
+            ) as response:
+                if response.status in (401, 403):
+                    raise InvalidAuth
+                if response.status >= 400:
+                    raise CannotConnect
 
-                    data = await response.json()
-                    display_name = data.get("displayName")
-                    if not display_name:
-                        raise CannotConnect
-                    return display_name
+                data = await response.json()
+                display_name = data.get("displayName")
+                if not display_name:
+                    raise CannotConnect
+                return display_name
         except (aiohttp.ClientError, asyncio.TimeoutError) as err:
             raise CannotConnect from err
 
