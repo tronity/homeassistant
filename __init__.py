@@ -18,6 +18,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
+from homeassistant.helpers.device_registry import DeviceInfo
 
 from .const import (
     DOMAIN,
@@ -101,6 +102,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     raise UpdateFailed(f"Failed to fetch vehicle data: {response.status}")
 
                 data = await response.json()
+                _LOGGER.debug(
+                    "Tronity update vehicle=%s raw values: charging=%r plugged=%r timestamp=%r",
+                    vehicle_id,
+                    data.get("charging"),
+                    data.get("plugged"),
+                    data.get("time") or data.get("timestamp") or data.get("createdAt"),
+                )
                 return data
 
         try:
@@ -166,3 +174,13 @@ class TronityEntity(CoordinatorEntity):
     def data(self):
         """Shortcut to access coordinator data for the entity."""
         return self.coordinator.data
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return metadata for Home Assistant device registry grouping."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.vehicle_id)},
+            name=self.display_name,
+            manufacturer="Tronity",
+            model="Connected Vehicle",
+        )
