@@ -9,6 +9,7 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant import config_entries
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
@@ -31,6 +32,13 @@ DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_CLIENT_ID, default=""): str,
         vol.Required(CONF_CLIENT_SECRET, default=""): str,
         vol.Required(CONF_VEHICLE_ID, default=""): str,
+    }
+)
+
+REAUTH_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_CLIENT_ID, default=""): str,
+        vol.Required(CONF_CLIENT_SECRET, default=""): str,
     }
 )
 
@@ -117,6 +125,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Tronity."""
 
     VERSION = 1
+    _reauth_entry: ConfigEntry | None = None
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -143,6 +152,64 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="user", data_schema=DATA_SCHEMA, errors=errors
+        )
+
+    async def async_step_reauth(self, entry_data: dict[str, Any]) -> FlowResult:
+        """Handle config entry reauth."""
+        self._reauth_entry = self.hass.config_entries.async_get_entry(
+            self.context["entry_id"]
+        )
+        if self._reauth_entry is None:
+            return self.async_abort(reason="unknown")
+
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Confirm and save new credentials for reauth."""
+        errors: dict[str, str] = {}
+
+        if self._reauth_entry is None:
+            return self.async_abort(reason="unknown")
+
+        if user_input is not None:
+            updated_data = {
+                **self._reauth_entry.data,
+                CONF_CLIENT_ID: user_input[CONF_CLIENT_ID],
+                CONF_CLIENT_SECRET: user_input[CONF_CLIENT_SECRET],
+            }
+
+            try:
+                info = await validate_input(self.hass, updated_data)
+            except InvalidAuth:
+                errors["base"] = "invalid_auth"
+            except CannotConnect:
+                errors["base"] = "cannot_connect"
+            except Exception:
+                _LOGGER.exception("Unexpected exception")
+                errors["base"] = "unknown"
+            else:
+                self.hass.config_entries.async_update_entry(
+                    self._reauth_entry,
+                    title=info["title"],
+                    data={**updated_data, CONF_DISPLAY_NAME: info["title"]},
+                )
+                await self.hass.config_entries.async_reload(self._reauth_entry.entry_id)
+                return self.async_abort(reason="reauth_successful")
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=self.add_suggested_values_to_schema(
+                REAUTH_SCHEMA,
+                {
+                    CONF_CLIENT_ID: self._reauth_entry.data.get(CONF_CLIENT_ID, ""),
+                    CONF_CLIENT_SECRET: self._reauth_entry.data.get(
+                        CONF_CLIENT_SECRET, ""
+                    ),
+                },
+            ),
+            errors=errors,
         )
 
 
