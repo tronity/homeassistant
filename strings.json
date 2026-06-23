@@ -11,15 +11,6 @@
         }
       }
     },
-    "options": {
-      "step": {
-        "init": {
-          "data": {
-            "poll_interval": "Poll interval (seconds)"
-          }
-        }
-      }
-    },
     "error": {
       "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
       "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
@@ -28,6 +19,15 @@
     },
     "abort": {
       "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "poll_interval": "Poll interval (seconds)"
+        }
+      }
     }
   }
 }
