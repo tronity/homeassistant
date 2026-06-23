@@ -14,7 +14,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.aiohttp_client import async_create_clientsession
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import (
     DOMAIN,
@@ -102,7 +102,7 @@ class TronityHub:
 
     async def get_bearer_token(self) -> str:
         try:
-            session = async_create_clientsession(self.hass)
+            session = async_get_clientsession(self.hass)
             async with session.post(
                 self.base_url,
                 data={
@@ -128,7 +128,7 @@ class TronityHub:
     async def get_display_name(self, bearer_token: str) -> str:
         headers = {"Authorization": f"Bearer {bearer_token}"}
         try:
-            session = async_create_clientsession(self.hass)
+            session = async_get_clientsession(self.hass)
             async with session.get(
                 self.vehicle_url + self.vehicle_id,
                 headers=headers,

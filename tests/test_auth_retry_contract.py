@@ -143,10 +143,10 @@ def _install_stubs() -> None:
 
     aiohttp_client_module = types.ModuleType("homeassistant.helpers.aiohttp_client")
 
-    def async_create_clientsession(hass):
+    def async_get_clientsession(hass):
         return hass._sessions.pop(0)
 
-    aiohttp_client_module.async_create_clientsession = async_create_clientsession
+    aiohttp_client_module.async_get_clientsession = async_get_clientsession
     sys.modules["homeassistant.helpers.aiohttp_client"] = aiohttp_client_module
 
     update_coordinator_module = types.ModuleType("homeassistant.helpers.update_coordinator")

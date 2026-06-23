@@ -143,10 +143,10 @@ def _install_stubs() -> None:
 
     aiohttp_client_module = types.ModuleType("homeassistant.helpers.aiohttp_client")
 
-    def async_create_clientsession(_hass):
+    def async_get_clientsession(_hass):
         raise RuntimeError("Should not be called in reauth tests")
 
-    aiohttp_client_module.async_create_clientsession = async_create_clientsession
+    aiohttp_client_module.async_get_clientsession = async_get_clientsession
     sys.modules["homeassistant.helpers.aiohttp_client"] = aiohttp_client_module
 
 

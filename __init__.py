@@ -10,7 +10,7 @@ import logging
 
 
 from homeassistant.exceptions import ConfigEntryAuthFailed
-from homeassistant.helpers.aiohttp_client import async_create_clientsession
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
@@ -97,7 +97,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             return token_cache[cache_key]
 
         try:
-            session = async_create_clientsession(hass)
+            session = async_get_clientsession(hass)
             async with session.post(
                 auth_url,
                 data={
@@ -128,7 +128,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         """Fetch data from Tronity API."""
         async def fetch_last_record(token: str) -> dict[str, Any]:
             headers = {"Authorization": f"Bearer {token}"}
-            session = async_create_clientsession(hass)
+            session = async_get_clientsession(hass)
             async with session.get(
                 vehicle_url + vehicle_id + "/last_record",
                 headers=headers,
