@@ -45,6 +45,7 @@ REAUTH_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_CLIENT_ID, default=""): str,
         vol.Required(CONF_CLIENT_SECRET, default=""): str,
+        vol.Required(CONF_VEHICLE_ID, default=""): str,
     }
 )
 
@@ -219,6 +220,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 **self._reauth_entry.data,
                 CONF_CLIENT_ID: user_input[CONF_CLIENT_ID],
                 CONF_CLIENT_SECRET: user_input[CONF_CLIENT_SECRET],
+                CONF_VEHICLE_ID: user_input[CONF_VEHICLE_ID],
             }
 
             try:
@@ -248,6 +250,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_CLIENT_SECRET: self._reauth_entry.data.get(
                         CONF_CLIENT_SECRET, ""
                     ),
+                    CONF_VEHICLE_ID: self._reauth_entry.data.get(CONF_VEHICLE_ID, ""),
                 },
             ),
             errors=errors,

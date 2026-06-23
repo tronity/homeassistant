@@ -191,6 +191,7 @@ class TestConfigFlowReauth(unittest.TestCase):
         async def fake_validate_input(_hass, data):
             self.assertEqual(data[self.module.CONF_CLIENT_ID], "new_id")
             self.assertEqual(data[self.module.CONF_CLIENT_SECRET], "new_secret")
+            self.assertEqual(data[self.module.CONF_VEHICLE_ID], "vehicle-2")
             return {"title": "New title"}
 
         self.module.validate_input = fake_validate_input
@@ -204,6 +205,7 @@ class TestConfigFlowReauth(unittest.TestCase):
                 {
                     self.module.CONF_CLIENT_ID: "new_id",
                     self.module.CONF_CLIENT_SECRET: "new_secret",
+                    self.module.CONF_VEHICLE_ID: "vehicle-2",
                 }
             )
         )
@@ -216,6 +218,7 @@ class TestConfigFlowReauth(unittest.TestCase):
         self.assertEqual(
             manager.updated_data[self.module.CONF_CLIENT_SECRET], "new_secret"
         )
+        self.assertEqual(manager.updated_data[self.module.CONF_VEHICLE_ID], "vehicle-2")
         self.assertEqual(manager.reloaded_entry_id, entry.entry_id)
 
     def test_reauth_invalid_auth_returns_error_form(self) -> None:
@@ -245,6 +248,7 @@ class TestConfigFlowReauth(unittest.TestCase):
                 {
                     self.module.CONF_CLIENT_ID: "wrong_id",
                     self.module.CONF_CLIENT_SECRET: "wrong_secret",
+                    self.module.CONF_VEHICLE_ID: "vehicle-1",
                 }
             )
         )

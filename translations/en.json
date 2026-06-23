@@ -15,7 +15,8 @@
             "reauth_confirm": {
                 "data": {
                     "client_id": "Client Id",
-                    "client_secret": "Client Secret"
+                    "client_secret": "Client Secret",
+                    "vehicle_id": "Vehicle Id"
                 }
             },
             "user": {

@@ -56,9 +56,12 @@ class TronityBinarySensorEntity(BinarySensorEntity, TronityEntity):
         return f"tronity.{self.display_name}.{self.entity_description.key}_binary"
 
     @property
-    def is_on(self) -> bool:
+    def is_on(self) -> bool | None:
         """Return true if the binary sensor is on."""
         value = self.data.get(self.entity_description.key)
+
+        if value is None:
+            return None
 
         if isinstance(value, bool):
             return value
@@ -73,4 +76,4 @@ class TronityBinarySensorEntity(BinarySensorEntity, TronityEntity):
             if normalized in {"false", "0", "no", "off", "not_charging", "unplugged"}:
                 return False
 
-        return False
+        return None
