@@ -1,7 +1,9 @@
 {
     "config": {
         "abort": {
-            "already_configured": "Das Gerät ist bereits konfiguriert"
+            "already_configured": "Das Gerät ist bereits konfiguriert",
+            "unknown": "Unerwarteter Fehler",
+            "reauth_successful": "Erneute Authentifizierung war erfolgreich"
         },
         "error": {
             "cannot_connect": "Verbindung fehlgeschlagen",
