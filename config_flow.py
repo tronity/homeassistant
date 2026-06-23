@@ -170,11 +170,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            if not _valid_poll_interval(user_input.get(CONF_POLL_INTERVAL)):
+            poll_interval = user_input.get(CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL)
+            if not _valid_poll_interval(poll_interval):
                 errors["base"] = "invalid_poll_interval"
                 return self.async_show_form(
                     step_id="user", data_schema=DATA_SCHEMA, errors=errors
                 )
+
+            user_input = {**user_input, CONF_POLL_INTERVAL: poll_interval}
 
             await self.async_set_unique_id(user_input[CONF_VEHICLE_ID])
             self._abort_if_unique_id_configured()
