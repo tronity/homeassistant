@@ -1,5 +1,6 @@
 """The Tronity integration."""
 from __future__ import annotations
+import json
 from cachetools import TTLCache
 from typing import Any
 import aiohttp
@@ -48,6 +49,27 @@ token_cache = TTLCache(maxsize=32, ttl=300)
 class AuthFailedDuringFetch(UpdateFailed):
     """Raised when vehicle data fetch fails due to invalid authentication."""
 
+
+async def _safe_json_response(response: aiohttp.ClientResponse, context: str) -> dict[str, Any]:
+    """Read JSON safely even when upstream sends an incorrect content type."""
+    try:
+        payload = await response.json(content_type=None)
+    except (aiohttp.ContentTypeError, json.JSONDecodeError) as err:
+        _LOGGER.warning(
+            "Tronity returned invalid JSON for %s (status=%s, content-type=%s)",
+            context,
+            response.status,
+            response.headers.get("Content-Type"),
+        )
+        raise UpdateFailed(
+            f"Invalid API response while reading {context}: HTTP {response.status}"
+        ) from err
+
+    if not isinstance(payload, dict):
+        raise UpdateFailed(f"Invalid API response while reading {context}: expected object")
+
+    return payload
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Tronity from a config entry."""
 
@@ -91,7 +113,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     )
                 if response.status not in (200, 201):
                     raise UpdateFailed(f"Failed to authenticate: {response.status}")
-                response_json = await response.json()
+                response_json = await _safe_json_response(response, "authentication")
                 bearer_token = response_json.get("access_token")
                 if not bearer_token:
                     raise ConfigEntryAuthFailed(
@@ -118,7 +140,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 if response.status >= 400:
                     raise UpdateFailed(f"Failed to fetch vehicle data: {response.status}")
 
-                data = await response.json()
+                data = await _safe_json_response(response, "vehicle last_record")
                 _LOGGER.debug(
                     "Tronity update vehicle=%s raw values: charging=%r plugged=%r timestamp=%r",
                     vehicle_id,

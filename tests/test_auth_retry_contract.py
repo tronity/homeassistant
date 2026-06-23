@@ -14,9 +14,17 @@ ROOT_DIR = INIT_FILE.parent
 
 
 class FakeResponse:
-    def __init__(self, status: int, payload: Optional[dict] = None) -> None:
+    def __init__(
+        self,
+        status: int,
+        payload: Optional[dict] = None,
+        json_error: Optional[Exception] = None,
+        content_type: str = "application/json",
+    ) -> None:
         self.status = status
         self._payload = payload or {}
+        self._json_error = json_error
+        self.headers = {"Content-Type": content_type}
 
     async def __aenter__(self):
         return self
@@ -24,7 +32,9 @@ class FakeResponse:
     async def __aexit__(self, exc_type, exc, tb):
         return False
 
-    async def json(self):
+    async def json(self, **_kwargs):
+        if self._json_error is not None:
+            raise self._json_error
         return self._payload
 
 
@@ -92,7 +102,11 @@ def _install_stubs() -> None:
     class ClientError(Exception):
         pass
 
+    class ContentTypeError(ClientError):
+        pass
+
     aiohttp_module.ClientError = ClientError
+    aiohttp_module.ContentTypeError = ContentTypeError
     sys.modules["aiohttp"] = aiohttp_module
 
     homeassistant_module = types.ModuleType("homeassistant")
@@ -268,6 +282,37 @@ class TestAuthRetryContract(unittest.TestCase):
 
         with self.assertRaises(self.integration.ConfigEntryAuthFailed):
             asyncio.run(self.integration.async_setup_entry(hass, entry))
+
+    def test_invalid_json_last_record_raises_update_failed(self) -> None:
+        """Unexpected non-JSON body should map to UpdateFailed with clear context."""
+        entry = FakeConfigEntry(
+            data={
+                self.integration.CONF_CLIENT_ID: "id",
+                self.integration.CONF_CLIENT_SECRET: "secret",
+                self.integration.CONF_VEHICLE_ID: "vehicle-1",
+            },
+            entry_id="entry-1",
+        )
+        content_type_error = sys.modules["aiohttp"].ContentTypeError("invalid mimetype")
+        hass = FakeHass(
+            sessions=[
+                FakeSession(post_responses=[FakeResponse(200, {"access_token": "token-1"})]),
+                FakeSession(
+                    get_responses=[
+                        FakeResponse(
+                            200,
+                            json_error=content_type_error,
+                            content_type="text/html; charset=utf-8",
+                        )
+                    ]
+                ),
+            ]
+        )
+
+        with self.assertRaises(self.integration.UpdateFailed) as ctx:
+            asyncio.run(self.integration.async_setup_entry(hass, entry))
+
+        self.assertIn("vehicle last_record", str(ctx.exception))
 
 
 if __name__ == "__main__":

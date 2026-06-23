@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import aiohttp
 from typing import Any
@@ -79,6 +80,26 @@ class TronityHub:
         self.client_secret = client_secret
         self.vehicle_id = vehicle_id
 
+    async def _safe_json_response(
+        self, response: aiohttp.ClientResponse, context: str
+    ) -> dict[str, Any]:
+        """Read JSON safely even when upstream sends an incorrect content type."""
+        try:
+            payload = await response.json(content_type=None)
+        except (aiohttp.ContentTypeError, json.JSONDecodeError) as err:
+            _LOGGER.warning(
+                "Tronity returned invalid JSON for %s (status=%s, content-type=%s)",
+                context,
+                response.status,
+                response.headers.get("Content-Type"),
+            )
+            raise CannotConnect from err
+
+        if not isinstance(payload, dict):
+            raise CannotConnect
+
+        return payload
+
     async def get_bearer_token(self) -> str:
         try:
             session = async_create_clientsession(self.hass)
@@ -96,7 +117,7 @@ class TronityHub:
                 if response.status >= 400:
                     raise CannotConnect
 
-                response_json = await response.json()
+                response_json = await self._safe_json_response(response, "authentication")
                 bearer_token = response_json.get("access_token")
                 if not bearer_token:
                     raise InvalidAuth
@@ -118,7 +139,7 @@ class TronityHub:
                 if response.status >= 400:
                     raise CannotConnect
 
-                data = await response.json()
+                data = await self._safe_json_response(response, "vehicle details")
                 display_name = data.get("displayName")
                 if not display_name:
                     raise CannotConnect
