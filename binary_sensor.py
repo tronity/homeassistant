@@ -38,7 +38,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class TronityBinarySensorEntity(BinarySensorEntity, TronityEntity):
+class TronityBinarySensorEntity(TronityEntity, BinarySensorEntity):
     """Representation of a Tronity vehicle binary sensor."""
 
     entity_description: BinarySensorEntityDescription
