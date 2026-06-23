@@ -219,11 +219,35 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason="unknown")
 
         if user_input is not None:
+            vehicle_id = user_input[CONF_VEHICLE_ID]
+            current_vehicle_id = self._reauth_entry.data.get(CONF_VEHICLE_ID)
+
+            if vehicle_id != current_vehicle_id:
+                for existing_entry in self.hass.config_entries.async_entries(DOMAIN):
+                    if existing_entry.entry_id == self._reauth_entry.entry_id:
+                        continue
+                    if existing_entry.unique_id == vehicle_id:
+                        errors["base"] = "already_configured"
+                        return self.async_show_form(
+                            step_id="reauth_confirm",
+                            data_schema=self.add_suggested_values_to_schema(
+                                REAUTH_SCHEMA,
+                                {
+                                    CONF_CLIENT_ID: self._reauth_entry.data.get(CONF_CLIENT_ID, ""),
+                                    CONF_CLIENT_SECRET: self._reauth_entry.data.get(
+                                        CONF_CLIENT_SECRET, ""
+                                    ),
+                                    CONF_VEHICLE_ID: vehicle_id,
+                                },
+                            ),
+                            errors=errors,
+                        )
+
             updated_data = {
                 **self._reauth_entry.data,
                 CONF_CLIENT_ID: user_input[CONF_CLIENT_ID],
                 CONF_CLIENT_SECRET: user_input[CONF_CLIENT_SECRET],
-                CONF_VEHICLE_ID: user_input[CONF_VEHICLE_ID],
+                CONF_VEHICLE_ID: vehicle_id,
             }
 
             try:
@@ -240,6 +264,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     self._reauth_entry,
                     title=info["title"],
                     data={**updated_data, CONF_DISPLAY_NAME: info["title"]},
+                    unique_id=vehicle_id,
                 )
                 await self.hass.config_entries.async_reload(self._reauth_entry.entry_id)
                 return self.async_abort(reason="reauth_successful")

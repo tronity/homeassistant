@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import importlib.util
 import sys
@@ -68,14 +70,17 @@ class FakeConfigEntry:
     data: dict
     entry_id: str
     title: str = "Tronity Vehicle"
+    unique_id: str | None = None
 
 
 class FakeConfigEntriesManager:
     def __init__(self, entry):
         self._entry = entry
+        self._entries = [entry]
         self.updated_entry = None
         self.updated_title = None
         self.updated_data = None
+        self.updated_unique_id = None
         self.reloaded_entry_id = None
 
     def async_get_entry(self, entry_id):
@@ -83,10 +88,16 @@ class FakeConfigEntriesManager:
             return self._entry
         return None
 
-    def async_update_entry(self, entry, title=None, data=None):
+    def async_entries(self, _domain=None):
+        return list(self._entries)
+
+    def async_update_entry(self, entry, title=None, data=None, unique_id=None):
         self.updated_entry = entry
         self.updated_title = title
         self.updated_data = data
+        self.updated_unique_id = unique_id
+        if unique_id is not None:
+            entry.unique_id = unique_id
 
     async def async_reload(self, entry_id):
         self.reloaded_entry_id = entry_id
@@ -182,6 +193,7 @@ class TestConfigFlowReauth(unittest.TestCase):
             },
             entry_id="entry-1",
             title="Old title",
+            unique_id="vehicle-1",
         )
         manager = FakeConfigEntriesManager(entry)
         flow = self.module.ConfigFlow()
@@ -219,6 +231,7 @@ class TestConfigFlowReauth(unittest.TestCase):
             manager.updated_data[self.module.CONF_CLIENT_SECRET], "new_secret"
         )
         self.assertEqual(manager.updated_data[self.module.CONF_VEHICLE_ID], "vehicle-2")
+        self.assertEqual(manager.updated_unique_id, "vehicle-2")
         self.assertEqual(manager.reloaded_entry_id, entry.entry_id)
 
     def test_reauth_invalid_auth_returns_error_form(self) -> None:
@@ -230,6 +243,7 @@ class TestConfigFlowReauth(unittest.TestCase):
             },
             entry_id="entry-1",
             title="Old title",
+            unique_id="vehicle-1",
         )
         manager = FakeConfigEntriesManager(entry)
         flow = self.module.ConfigFlow()
@@ -256,6 +270,58 @@ class TestConfigFlowReauth(unittest.TestCase):
         self.assertEqual(result["type"], "form")
         self.assertEqual(result["step_id"], "reauth_confirm")
         self.assertEqual(result["errors"].get("base"), "invalid_auth")
+        self.assertIsNone(manager.updated_entry)
+        self.assertIsNone(manager.reloaded_entry_id)
+
+    def test_reauth_vehicle_id_duplicate_returns_already_configured(self) -> None:
+        entry = FakeConfigEntry(
+            data={
+                self.module.CONF_CLIENT_ID: "old_id",
+                self.module.CONF_CLIENT_SECRET: "old_secret",
+                self.module.CONF_VEHICLE_ID: "vehicle-1",
+            },
+            entry_id="entry-1",
+            title="Old title",
+            unique_id="vehicle-1",
+        )
+        existing = FakeConfigEntry(
+            data={
+                self.module.CONF_CLIENT_ID: "other_id",
+                self.module.CONF_CLIENT_SECRET: "other_secret",
+                self.module.CONF_VEHICLE_ID: "vehicle-2",
+            },
+            entry_id="entry-2",
+            title="Other title",
+            unique_id="vehicle-2",
+        )
+
+        manager = FakeConfigEntriesManager(entry)
+        manager._entries.append(existing)
+
+        flow = self.module.ConfigFlow()
+        flow.hass = FakeHass(manager)
+        flow.context = {"entry_id": entry.entry_id}
+
+        async def fake_validate_input(_hass, _data):
+            return {"title": "New title"}
+
+        self.module.validate_input = fake_validate_input
+
+        asyncio.run(flow.async_step_reauth({}))
+
+        result = asyncio.run(
+            flow.async_step_reauth_confirm(
+                {
+                    self.module.CONF_CLIENT_ID: "new_id",
+                    self.module.CONF_CLIENT_SECRET: "new_secret",
+                    self.module.CONF_VEHICLE_ID: "vehicle-2",
+                }
+            )
+        )
+
+        self.assertEqual(result["type"], "form")
+        self.assertEqual(result["step_id"], "reauth_confirm")
+        self.assertEqual(result["errors"].get("base"), "already_configured")
         self.assertIsNone(manager.updated_entry)
         self.assertIsNone(manager.reloaded_entry_id)
 
