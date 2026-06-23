@@ -9,6 +9,12 @@
           "poll_interval": "Poll interval (seconds)"
 
         }
+      },
+      "reauth_confirm": {
+        "data": {
+          "client_id": "Client Id",
+          "client_secret": "Client Secret"
+        }
       }
     },
     "error": {

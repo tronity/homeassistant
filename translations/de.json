@@ -12,6 +12,12 @@
             "unknown": "Unerwarteter Fehler"
         },
         "step": {
+            "reauth_confirm": {
+                "data": {
+                    "client_id": "Client Id",
+                    "client_secret": "Client Secret"
+                }
+            },
             "user": {
                 "data": {
                     "client_id": "Client Id",
