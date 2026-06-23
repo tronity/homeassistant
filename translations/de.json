@@ -23,6 +23,9 @@
         }
     },
     "options": {
+        "error": {
+            "invalid_poll_interval": "Das Abfrageintervall muss zwischen 60 und 86400 Sekunden liegen."
+        },
         "step": {
             "init": {
                 "data": {

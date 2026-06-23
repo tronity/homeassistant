@@ -23,6 +23,9 @@
         }
     },
     "options": {
+        "error": {
+            "invalid_poll_interval": "Poll interval must be between 60 and 86400 seconds."
+        },
         "step": {
             "init": {
                 "data": {
