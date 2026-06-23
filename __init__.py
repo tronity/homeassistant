@@ -79,7 +79,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     auth_url = CONF_AUTH_URL
     vehicle_url = CONF_VEHICLES_URL
 
-    cache_key = entry.entry_id
+    cache_key = (entry.entry_id, client_id, client_secret)
     poll_interval_value = entry.options.get(
         CONF_POLL_INTERVAL,
         entry.data.get(CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL),
