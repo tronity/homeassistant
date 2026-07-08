@@ -8,6 +8,11 @@ CONF_BEARER_TOKEN = "bearer_token"
 CONF_DISPLAY_NAME = "display_name"
 CONF_VEHICLE_DATA = "vehicle_data"
 CONF_DATA_COORDINATOR = "coordinator"
+CONF_POLL_INTERVAL = "poll_interval"
+
+DEFAULT_POLL_INTERVAL = 60
+MIN_POLL_INTERVAL = 60
+MAX_POLL_INTERVAL = 86400
 
 CONF_AUTH_URL = "https://api.tronity.tech/authentication"
 CONF_VEHICLES_URL = "https://api.tronity.tech/tronity/vehicles/"

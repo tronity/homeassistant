@@ -23,11 +23,14 @@ data and create automations based on it.
 
 ## Configuration
 
-1. Open your configuration.yaml file in your Home Assistant installation directory.
-2. Add the following code to the file: </br>
-  ```tronity:```
-3. Save the configuration file.
-4. Restart Home Assistant.
+This integration is configured via Home Assistant UI (Config Flow).
+
+1. Open Settings > Devices & Services.
+2. Click Add Integration.
+3. Search for Tronity and select it.
+4. Enter your Tronity Client ID, Client Secret, and Vehicle ID.
+
+No configuration in configuration.yaml is required.
 
 ## Usage
 

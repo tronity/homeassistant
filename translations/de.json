@@ -1,19 +1,42 @@
 {
     "config": {
         "abort": {
-            "already_configured": "Das Gerät ist bereits konfiguriert"
+            "already_configured": "Das Gerät ist bereits konfiguriert",
+            "unknown": "Unerwarteter Fehler",
+            "reauth_successful": "Erneute Authentifizierung war erfolgreich"
         },
         "error": {
             "cannot_connect": "Verbindung fehlgeschlagen",
             "invalid_auth": "Authentifizierung fehlgeschlagen",
+            "invalid_poll_interval": "Das Abfrageintervall muss zwischen 60 und 86400 Sekunden liegen.",
             "unknown": "Unerwarteter Fehler"
         },
         "step": {
-            "user": {
+            "reauth_confirm": {
                 "data": {
                     "client_id": "Client Id",
                     "client_secret": "Client Secret",
                     "vehicle_id": "Vehicle Id"
+                }
+            },
+            "user": {
+                "data": {
+                    "client_id": "Client Id",
+                    "client_secret": "Client Secret",
+                    "vehicle_id": "Vehicle Id",
+                    "poll_interval": "Abfrageintervall (Sekunden)"
+                }
+            }
+        }
+    },
+    "options": {
+        "error": {
+            "invalid_poll_interval": "Das Abfrageintervall muss zwischen 60 und 86400 Sekunden liegen."
+        },
+        "step": {
+            "init": {
+                "data": {
+                    "poll_interval": "Abfrageintervall (Sekunden)"
                 }
             }
         }

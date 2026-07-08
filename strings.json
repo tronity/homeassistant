@@ -5,18 +5,41 @@
         "data": {
           "client_id": "Client Id",
           "client_secret": "Client Secret",
-          "vehicle_id": "Vehicle Id"
+          "vehicle_id": "Vehicle Id",
+          "poll_interval": "Poll interval (seconds)"
 
+        }
+      },
+      "reauth_confirm": {
+        "data": {
+          "client_id": "Client Id",
+          "client_secret": "Client Secret",
+          "vehicle_id": "Vehicle Id"
         }
       }
     },
     "error": {
       "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
       "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
+      "invalid_poll_interval": "Poll interval must be between 60 and 86400 seconds.",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]",
+      "unknown": "Unexpected error",
+      "reauth_successful": "Re-authentication was successful"
+    }
+  },
+  "options": {
+    "error": {
+      "invalid_poll_interval": "Poll interval must be between 60 and 86400 seconds."
+    },
+    "step": {
+      "init": {
+        "data": {
+          "poll_interval": "Poll interval (seconds)"
+        }
+      }
     }
   }
 }
