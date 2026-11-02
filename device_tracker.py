@@ -24,16 +24,13 @@ class TronityDeviceTracker(TronityEntity, TrackerEntity):
 
     _attr_icon = "mdi:map"
     _attr_force_update = False
+    # The tracker is the vehicle itself: it takes the device name.
+    _attr_name = None
 
     def __init__(self, coordinator, config_entry) -> None:
         """Initialize Tronity device tracker."""
         super().__init__(coordinator, config_entry)
         self._attr_unique_id = f"{self.vehicle_id}_device_tracker"
-
-    @property
-    def name(self) -> str:
-        """Return name of the sensor."""
-        return f"{self.vehicle_id}_device_tracker"
 
     @property
     def source_type(self) -> SourceType:
