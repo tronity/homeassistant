@@ -41,5 +41,41 @@
         }
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "odometer": {
+        "name": "Odometer"
+      },
+      "range": {
+        "name": "Range"
+      },
+      "battery_level": {
+        "name": "Battery level"
+      },
+      "charging": {
+        "name": "Charging state"
+      },
+      "plugged": {
+        "name": "Plug state"
+      },
+      "charger_power": {
+        "name": "Charging power"
+      },
+      "charge_remaining_time": {
+        "name": "Remaining charging time"
+      },
+      "display_name": {
+        "name": "Display name"
+      }
+    },
+    "binary_sensor": {
+      "charging": {
+        "name": "Charging"
+      },
+      "plugged": {
+        "name": "Plugged in"
+      }
+    }
   }
 }

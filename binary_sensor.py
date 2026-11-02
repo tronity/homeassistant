@@ -13,10 +13,12 @@ from .const import CONF_DATA_COORDINATOR, DOMAIN
 BINARY_SENSOR_ENTITIES = [
     BinarySensorEntityDescription(
         key="charging",
+        translation_key="charging",
         icon="mdi:battery-charging",
     ),
     BinarySensorEntityDescription(
         key="plugged",
+        translation_key="plugged",
         icon="mdi:power-plug",
     ),
 ]
@@ -49,11 +51,6 @@ class TronityBinarySensorEntity(TronityEntity, BinarySensorEntity):
         self.entity_description = description
         # Keep existing sensor unique_ids untouched and create parallel binary entities.
         self._attr_unique_id = f"{self.vehicle_id}_{description.key}_binary"
-
-    @property
-    def name(self) -> str:
-        """Return name of the binary sensor."""
-        return f"tronity.{self.display_name}.{self.entity_description.key}_binary"
 
     @property
     def is_on(self) -> bool | None:

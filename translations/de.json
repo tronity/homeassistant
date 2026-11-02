@@ -40,5 +40,41 @@
                 }
             }
         }
+    },
+    "entity": {
+        "sensor": {
+            "odometer": {
+                "name": "Kilometerstand"
+            },
+            "range": {
+                "name": "Reichweite"
+            },
+            "battery_level": {
+                "name": "Akkustand"
+            },
+            "charging": {
+                "name": "Ladestatus"
+            },
+            "plugged": {
+                "name": "Steckerstatus"
+            },
+            "charger_power": {
+                "name": "Ladeleistung"
+            },
+            "charge_remaining_time": {
+                "name": "Restladezeit"
+            },
+            "display_name": {
+                "name": "Anzeigename"
+            }
+        },
+        "binary_sensor": {
+            "charging": {
+                "name": "Lädt"
+            },
+            "plugged": {
+                "name": "Eingesteckt"
+            }
+        }
     }
 }

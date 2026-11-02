@@ -16,6 +16,7 @@ from .const import DOMAIN, CONF_DATA_COORDINATOR
 SENSOR_ENTITIES = [
     SensorEntityDescription(
         key="odometer",
+        translation_key="odometer",
         icon="mdi:speedometer",
         device_class=SensorDeviceClass.DISTANCE,
         native_unit_of_measurement="km",
@@ -23,6 +24,7 @@ SENSOR_ENTITIES = [
     ),
     SensorEntityDescription(
         key="range",
+        translation_key="range",
         icon="mdi:ev-station",
         device_class=SensorDeviceClass.DISTANCE,
         native_unit_of_measurement="km",
@@ -30,28 +32,33 @@ SENSOR_ENTITIES = [
     ),
     SensorEntityDescription(
         key="level",
+        translation_key="battery_level",
         device_class=SensorDeviceClass.BATTERY,
         native_unit_of_measurement="%",
         state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorEntityDescription(
         key="charging",
+        translation_key="charging",
         icon="mdi:battery-charging",
     ),
     SensorEntityDescription(
         key="plugged",
+        translation_key="plugged",
         icon="mdi:power-plug",
         device_class=SensorDeviceClass.ENUM,
         options=[False, True],
     ),
     SensorEntityDescription(
         key="chargerPower",
+        translation_key="charger_power",
         device_class=SensorDeviceClass.POWER,
         native_unit_of_measurement="kW",
         state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorEntityDescription(
         key="chargeRemainingTime",
+        translation_key="charge_remaining_time",
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement="s",
         state_class=SensorStateClass.MEASUREMENT,
@@ -87,11 +94,6 @@ class TronitySensorEntity(SensorEntity, TronityEntity):
         self._attr_unique_id = f"{self.vehicle_id}_{description.key}"
 
     @property
-    def name(self) -> str:
-        """Return name of the sensor."""
-        return f"tronity.{self.display_name}.{self.entity_description.key}"
-
-    @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
         return self.data.get(self.entity_description.key)
@@ -107,11 +109,7 @@ class DisplayName(SensorEntity, TronityEntity):
         super().__init__(coordinator, config_entry)
         self._attr_unique_id = f"{self.vehicle_id}_display_name"
         self._attr_icon = "mdi:car"
-
-    @property
-    def name(self) -> str:
-        """Return name of the sensor."""
-        return "tronity.display_name"
+        self._attr_translation_key = "display_name"
 
     @property
     def native_value(self) -> StateType:
